@@ -98,7 +98,7 @@ export const ImportExcelView: React.FC = () => {
       </div>
 
       {/* Thông tin mô tả quy định & cấu trúc dữ liệu */}
-      <div className="card">
+      {/* <div className="card">
         <div className="card-header">
           <span className="card-title">ℹ️ Cấu Trúc Dữ Liệu Excel Chuẩn Của Máy Chấm Công</span>
         </div>
@@ -143,7 +143,7 @@ export const ImportExcelView: React.FC = () => {
             Nếu quên check-out, hệ thống mặc định tính giờ ra là 17:00.
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
