@@ -11,6 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let win: BrowserWindow | null = null;
 
 function createWindow() {
+  const preloadPath = path.join(__dirname, 'preload.cjs');
+  console.log('[Main] Sử dụng preload script:', preloadPath);
+
   win = new BrowserWindow({
     title: 'Quản Lý Chấm Công',
     width: 1200,
@@ -18,7 +21,7 @@ function createWindow() {
     minWidth: 1000,
     minHeight: 700,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
     },

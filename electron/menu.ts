@@ -1,9 +1,17 @@
-import { Menu, BrowserWindow, dialog, shell, app, MenuItemConstructorOptions } from 'electron';
+import { Menu, BrowserWindow, BaseWindow, dialog, shell, app, MenuItemConstructorOptions } from 'electron';
 
 export function setupApplicationMenu(win: BrowserWindow) {
-  const sendNavigate = (tab: string) => {
-    if (win && !win.isDestroyed()) {
-      win.webContents.send('menu-navigate', tab);
+  const sendNavigate = (tab: string, targetWin?: BaseWindow) => {
+    const target =
+      targetWin instanceof BrowserWindow && !targetWin.isDestroyed()
+        ? targetWin
+        : win && !win.isDestroyed()
+        ? win
+        : BrowserWindow.getFocusedWindow();
+
+    if (target && !target.isDestroyed()) {
+      console.log(`[Menu] Navigating to tab: ${tab}`);
+      target.webContents.send('menu-navigate', tab);
     }
   };
 
@@ -13,8 +21,8 @@ export function setupApplicationMenu(win: BrowserWindow) {
       submenu: [
         {
           label: 'Đăng Xuất Tài Khoản',
-          click: () => {
-            sendNavigate('logout');
+          click: (_item, focusedWin) => {
+            sendNavigate('logout', focusedWin);
           },
         },
         { type: 'separator' },
@@ -31,28 +39,28 @@ export function setupApplicationMenu(win: BrowserWindow) {
         {
           label: '📊 Tổng Quan (Dashboard)',
           accelerator: 'CmdOrCtrl+1',
-          click: () => sendNavigate('dashboard'),
+          click: (_item, focusedWin) => sendNavigate('dashboard', focusedWin),
         },
         { type: 'separator' },
         {
           label: '👥 Quản Lý Nhân Viên',
           accelerator: 'CmdOrCtrl+2',
-          click: () => sendNavigate('employees'),
+          click: (_item, focusedWin) => sendNavigate('employees', focusedWin),
         },
         {
           label: '📥 Nhập Công Từ Excel',
           accelerator: 'CmdOrCtrl+3',
-          click: () => sendNavigate('import'),
+          click: (_item, focusedWin) => sendNavigate('import', focusedWin),
         },
         {
           label: '📅 Dữ Liệu Chấm Công',
           accelerator: 'CmdOrCtrl+4',
-          click: () => sendNavigate('attendance'),
+          click: (_item, focusedWin) => sendNavigate('attendance', focusedWin),
         },
         {
           label: '📝 Duyệt Phép & Đi Trễ',
           accelerator: 'CmdOrCtrl+5',
-          click: () => sendNavigate('leaves'),
+          click: (_item, focusedWin) => sendNavigate('leaves', focusedWin),
         },
       ],
     },
@@ -62,12 +70,12 @@ export function setupApplicationMenu(win: BrowserWindow) {
         {
           label: '🏆 Thưởng Chuyên Cần',
           accelerator: 'CmdOrCtrl+6',
-          click: () => sendNavigate('bonuses'),
+          click: (_item, focusedWin) => sendNavigate('bonuses', focusedWin),
         },
         {
           label: '💰 Tổng Hợp Bảng Lương',
           accelerator: 'CmdOrCtrl+7',
-          click: () => sendNavigate('salaries'),
+          click: (_item, focusedWin) => sendNavigate('salaries', focusedWin),
         },
       ],
     },

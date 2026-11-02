@@ -40,7 +40,12 @@ function App() {
   };
 
   useEffect(() => {
-    if (window.electronAPI?.onMenuNavigate) {
+    if (!window.electronAPI) {
+      console.warn('[Renderer] window.electronAPI is undefined.');
+      return;
+    }
+
+    if (window.electronAPI.onMenuNavigate) {
       console.log('[Renderer] Registering onMenuNavigate listener');
       const unsubscribe = window.electronAPI.onMenuNavigate((tab: string) => {
         console.log('[Renderer] Received menu tab:', tab);

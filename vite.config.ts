@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import electron from 'vite-plugin-electron'
-import renderer from 'vite-plugin-electron-renderer'
+import electron from 'vite-plugin-electron/simple'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,8 +10,8 @@ export default defineConfig({
         plugins: [['babel-plugin-react-compiler']],
       },
     }),
-    electron([
-      {
+    electron({
+      main: {
         entry: 'electron/main.ts',
         vite: {
           build: {
@@ -22,13 +21,18 @@ export default defineConfig({
           },
         },
       },
-      {
-        entry: 'electron/preload.ts',
-        onstart(options) {
-          options.reload()
+      preload: {
+        input: 'electron/preload.ts',
+        vite: {
+          build: {
+            rollupOptions: {
+              output: {
+                entryFileNames: '[name].cjs',
+              },
+            },
+          },
         },
       },
-    ]),
-    renderer(),
+    }),
   ],
 })
