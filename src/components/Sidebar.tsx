@@ -33,10 +33,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       section: 'main',
     },
     {
-      id: 'employees' as TabId,
-      label: 'Quản lý nhân viên',
-      icon: '👥',
-      section: 'management',
+      id: 'attendance' as TabId,
+      label: 'Dữ liệu chấm công',
+      icon: '📅',
+      section: 'attendance',
     },
     {
       id: 'import' as TabId,
@@ -45,17 +45,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       section: 'attendance',
     },
     {
-      id: 'attendance' as TabId,
-      label: 'Dữ liệu chấm công',
-      icon: '📅',
-      section: 'attendance',
-    },
-    {
       id: 'leaves' as TabId,
       label: 'Duyệt phép & Đi trễ',
       icon: '📝',
       section: 'attendance',
       badge: pendingLeavesCount > 0 ? pendingLeavesCount : undefined,
+    },
+    {
+      id: 'employees' as TabId,
+      label: 'Quản lý nhân viên',
+      icon: '👥',
+      section: 'management',
     },
     {
       id: 'bonuses' as TabId,
