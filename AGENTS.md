@@ -4,6 +4,7 @@ Tài liệu đặc tả cho AI
 Source dùng Vite + React + Electron
 Dùng SQLite
 Trên trường đặt bằng tiếng anh
+Tên hàm, biến dùng tiếng anh, chỉ có các mô tả thì dùng tiếng việt.
 File db và các file import nên lưu vào thư mục an toàn tại app.getPath('userData')
 
 - CHỨC NĂNG PHẦN MỀM
