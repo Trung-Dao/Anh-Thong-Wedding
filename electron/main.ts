@@ -24,6 +24,9 @@ function createWindow() {
     },
   });
 
+  // Mở ứng dụng phóng to tối đa (maximize) mặc định
+  win.maximize();
+
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL);
     // win.webContents.openDevTools();
