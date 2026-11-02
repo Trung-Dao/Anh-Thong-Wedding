@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'node:module';
 import { initDatabase, getDb } from './database/db';
+import { setupApplicationMenu } from './menu';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -29,6 +30,9 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  // Khởi tạo Menu native trên Electron
+  setupApplicationMenu(win);
 }
 
 app.on('window-all-closed', () => {
