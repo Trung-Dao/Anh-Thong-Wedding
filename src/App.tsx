@@ -47,6 +47,7 @@ function App() {
 
     if (window.electronAPI.onMenuNavigate) {
       console.log('[Renderer] Registering onMenuNavigate listener');
+
       const unsubscribe = window.electronAPI.onMenuNavigate((tab: string) => {
         console.log('[Renderer] Received menu tab:', tab);
         if (tab === 'logout') {
@@ -67,6 +68,7 @@ function App() {
           setCurrentTab(tab as TabId);
         }
       });
+      
       return () => {
         unsubscribe?.();
       };
