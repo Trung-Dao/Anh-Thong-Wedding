@@ -2,7 +2,7 @@ Tài liệu đặc tả cho AI
 
 - Kiến trúc kỹ thuật:
 Source dùng Vite + React + Electron
-Dùng SQLite
+Dùng SQLite tên: athong_wedding.db
 Trên trường đặt bằng tiếng anh
 Tên hàm, biến dùng tiếng anh, chỉ có các mô tả thì dùng tiếng việt.
 File db và các file import nên lưu vào thư mục an toàn tại app.getPath('userData')
