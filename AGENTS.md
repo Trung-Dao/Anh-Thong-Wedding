@@ -1,11 +1,10 @@
 Tài liệu đặc tả cho AI
 
 - Kiến trúc kỹ thuật:
-Tên db: athong_chamcong
-user local: root
-pass: rỗng
+Source dùng Vite + React + Electron
+Dùng SQLite
 Trên trường đặt bằng tiếng anh
-Kết nối trực tiếp đến csdl, không cần api
+File db và các file import nên lưu vào thư mục an toàn tại app.getPath('userData')
 
 - CHỨC NĂNG PHẦN MỀM
 1. Đăng nhập: bảng user chứa thông tin đăng nhập
@@ -55,7 +54,27 @@ Kết nối trực tiếp đến csdl, không cần api
     166660/ngày
   Lương tăng ca: áp dụng cho chính thức và học việc là: 40000/giờ
 
-- Dữ liệu máy chấm công xuất ra định dang excel gồm
+- Dữ liệu máy chấm công xuất ra định dang excel gồm dòng/cột và dữ liệu như bên dưới.
+  	B	C	D	E	F	G	H
+  1	Mã	Ngày	Giờ	Kiểu chấm	Nguồn chấm	Mã số máy	Tên máy
+  2	3	46296	46296.56319	255	1	1	Máy MCC00001
+  3	3	46296	46296.57569	255	1	1	Máy MCC00001
+  4	3	46296	46296.625	255	1	1	Máy MCC00001
+  5	3	46296	46296.67083	255	1	1	Máy MCC00001
+  6	4	46296	46296.69583	255	1	1	Máy MCC00001
+  7	5	46296	46296.69653	255	1	1	Máy MCC00001
+  8	1	46296	46296.69653	255	1	1	Máy MCC00001
+  9	6	46296	46296.69722	255	1	1	Máy MCC00001
+  10	2	46296	46296.69722	255	1	1	Máy MCC00001
+  11	1	46297	46297.29097	255	1	1	Máy MCC00001
+  12	5	46297	46297.30903	255	1	1	Máy MCC00001
+  13	2	46297	46297.31944	255	1	1	Máy MCC00001
+  14	6	46297	46297.32569	255	1	1	Máy MCC00001
+  15	2	46297	46297.72083	255	1	1	Máy MCC00001
+  16	5	46297	46297.72083	255	1	1	Máy MCC00001
+  17	1	46297	46297.72083	255	1	1	Máy MCC00001
+  18	6	46297	46297.72153	255	1	1	Máy MCC00001
+  19	1	46298	46298.29028	255	1	1	Máy MCC00001
 
 - Quản lý nhân viên và bảng lương
   Bảng nhân viên: bổ sung loại nhân viên, ngày vào làm, trạng thái
