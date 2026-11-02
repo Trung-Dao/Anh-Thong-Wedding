@@ -12,13 +12,6 @@ export function setupApplicationMenu(win: BrowserWindow) {
       label: 'Hệ Thống',
       submenu: [
         {
-          label: 'Mở Thư Mục Dữ Liệu (userData)',
-          click: () => {
-            shell.openPath(app.getPath('userData'));
-          },
-        },
-        { type: 'separator' },
-        {
           label: 'Đăng Xuất Tài Khoản',
           click: () => {
             sendNavigate('logout');
