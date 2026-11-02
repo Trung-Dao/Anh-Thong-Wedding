@@ -1,32 +1,30 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { app } from 'electron';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let dbInstance: Database.Database | null = null;
 
 /**
  * Lấy đường dẫn lưu file database athong_wedding.db
- * - Khi chạy trong Electron: lưu tại app.getPath('userData')
- * - Khi chạy script test ngoài Electron: lưu ngay tại thư mục dự án
+ * - Đang lập trình (DEV): Lưu trực tiếp tại source c:\wamp64\www\athong_wedding\athong_wedding.db để bạn xem và sửa.
+ * - Đã đóng gói (PRODUCTION .exe): Tự động chuyển sang app.getPath('userData') cho khách hàng.
  */
 export function getDatabasePath(): string {
-  let dbDir: string;
-  try {
-    if (app && typeof app.getPath === 'function') {
-      dbDir = app.getPath('userData');
-    } else {
-      dbDir = process.cwd();
+  // 1. Nếu đã đóng gói thành file .exe (cho khách)
+  if (app && app.isPackaged) {
+    const dbDir = app.getPath('userData');
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
     }
-  } catch {
-    dbDir = process.cwd();
+    return path.join(dbDir, 'athong_wedding.db');
   }
 
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-  }
-
-  return path.join(dbDir, 'athong_wedding.db');
+  // 2. Khi đang code (npm run dev) -> Lưu NGAY TRONG THƯ MỤC SOURCE DỰ ÁN
+  return path.join(process.cwd(), 'athong_wedding.db');
 }
 
 /**
@@ -49,9 +47,9 @@ export function initDatabase(): Database.Database {
 
   // Đọc và chạy file schema.sql để tạo các bảng
   const possibleSchemaPaths = [
+    path.join(process.cwd(), 'electron', 'database', 'schema.sql'),
     path.join(__dirname, 'schema.sql'),
     path.join(__dirname, 'database', 'schema.sql'),
-    path.join(process.cwd(), 'electron', 'database', 'schema.sql'),
   ];
 
   let schemaSql = '';
@@ -78,4 +76,3 @@ export function getDb(): Database.Database {
   }
   return dbInstance;
 }
-
