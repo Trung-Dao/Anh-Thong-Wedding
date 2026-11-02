@@ -88,7 +88,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </button>
 
           <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', color: '#64748b' }}>
-            Tài khoản mẫu: <strong>admin</strong> | Mật khẩu: <strong>123456</strong>
           </div>
         </form>
       </div>

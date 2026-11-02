@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="sidebar-brand-icon">ÁT</div>
+        <div className="sidebar-brand-icon">PM</div>
         <div className="sidebar-brand-text">
           <h1>Quản Lý Chấm Công</h1>
         </div>

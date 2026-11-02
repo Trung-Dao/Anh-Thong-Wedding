@@ -73,7 +73,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             >
               <span style={{ fontSize: '24px', marginRight: '10px' }}>📝</span>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 'bold' }}>Duyệt Đơn Phép & Đi Trễ</div>
+                <div style={{ fontWeight: 'bold' }}>Duyệt Phép & Đi Trễ</div>
                 <div style={{ fontSize: '11px', color: '#64748b' }}>Phê duyệt có phép / không phép</div>
               </div>
             </button>
