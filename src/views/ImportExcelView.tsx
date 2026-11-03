@@ -106,9 +106,14 @@ export const ImportExcelView: React.FC = () => {
         throw new Error(result.message || 'Không thể nhập dữ liệu từ file Excel.');
       }
 
+      const dupText =
+        (result.duplicateRawRows || 0) > 0
+          ? ` (Phát hiện ${result.duplicateRawRows} dòng quẹt thẻ trùng lặp đã được bỏ qua)`
+          : '';
+
       setStatusMsg({
         type: 'success',
-        text: `Nhập dữ liệu thành công! Đã lưu file "${result.savedFileName}", nạp ${result.totalPunches} lượt chấm công của ${result.uniqueEmployees} nhân viên trong ${result.totalDays} ngày công (Từ ${result.dateRange?.from} đến ${result.dateRange?.to}).`,
+        text: `Nhập dữ liệu thành công! Đã lưu file "${result.savedFileName}". Đã nạp ${result.newRawRows ?? result.totalPunches} dòng dữ liệu thô mới${dupText}, tổng hợp thành ${result.totalDays} ngày công cho ${result.uniqueEmployees} nhân viên (Từ ${result.dateRange?.from} đến ${result.dateRange?.to}).`,
         details: result,
       });
 

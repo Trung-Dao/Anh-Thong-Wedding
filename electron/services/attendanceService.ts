@@ -10,6 +10,9 @@ export interface ImportResult {
   message?: string;
   savedFileName?: string;
   totalRows?: number;
+  totalRawRows?: number;
+  newRawRows?: number;
+  duplicateRawRows?: number;
   totalPunches?: number;
   totalDays?: number;
   uniqueEmployees?: number;
@@ -193,10 +196,14 @@ export async function importExcelTimesheet(
     throw new Error('File Excel không có dữ liệu để nhập!');
   }
 
-  // Xác định vị trí cột Mã, Ngày, Giờ
+  // Xác định vị trí cột Mã, Ngày, Giờ, Kiểu chấm, Nguồn chấm, Mã máy, Tên máy
   let codeCol = 1;
   let dateCol = 2;
   let timeCol = 3;
+  let typeCol = 4;
+  let sourceCol = 5;
+  let machineNumCol = 6;
+  let machineNameCol = 7;
 
   const headerRow = rawRows[0] || [];
   for (let c = 0; c < headerRow.length; c++) {
@@ -204,9 +211,25 @@ export async function importExcelTimesheet(
     if (val === 'mã' || val === 'ma' || val === 'code' || val === 'mã nv') codeCol = c;
     if (val === 'ngày' || val === 'ngay' || val === 'date') dateCol = c;
     if (val === 'giờ' || val === 'gio' || val === 'time') timeCol = c;
+    if (val === 'kiểu chấm' || val === 'kieu cham' || val === 'type') typeCol = c;
+    if (val === 'nguồn chấm' || val === 'nguon cham' || val === 'source') sourceCol = c;
+    if (val === 'mã số máy' || val === 'ma so may' || val === 'mã máy' || val === 'machine id') machineNumCol = c;
+    if (val === 'tên máy' || val === 'ten may' || val === 'machine name') machineNameCol = c;
   }
 
-  // Nhóm lần chấm công theo (Mã nhân viên, Ngày)
+  interface RawPunchRecord {
+    code: string;
+    dateRaw: string;
+    timeRaw: string;
+    dateStr: string;
+    timeStr: string;
+    punchType: number | null;
+    punchSource: number | null;
+    machineNumber: number | null;
+    machineName: string;
+  }
+
+  const rawPunchesList: RawPunchRecord[] = [];
   const punchesByEmpDate: Record<string, string[]> = {};
   const allDates: string[] = [];
   const allCodes = new Set<string>();
@@ -219,14 +242,44 @@ export async function importExcelTimesheet(
     }
 
     const code = String(row[codeCol]).trim();
+    const dateRaw = row[dateCol] !== undefined && row[dateCol] !== null ? String(row[dateCol]).trim() : '';
+    const timeRaw = row[timeCol] !== undefined && row[timeCol] !== null ? String(row[timeCol]).trim() : '';
     const dateStr = parseDateCell(row[dateCol]);
     const timeStr = parseTimeCell(row[timeCol]);
+    const punchType =
+      row[typeCol] !== undefined && row[typeCol] !== null && row[typeCol] !== ''
+        ? Number(row[typeCol])
+        : null;
+    const punchSource =
+      row[sourceCol] !== undefined && row[sourceCol] !== null && row[sourceCol] !== ''
+        ? Number(row[sourceCol])
+        : null;
+    const machineNumber =
+      row[machineNumCol] !== undefined && row[machineNumCol] !== null && row[machineNumCol] !== ''
+        ? Number(row[machineNumCol])
+        : 1;
+    const machineName =
+      row[machineNameCol] !== undefined && row[machineNameCol] !== null
+        ? String(row[machineNameCol]).trim()
+        : '';
 
     if (!dateStr || !timeStr) continue;
 
     allCodes.add(code);
     allDates.push(dateStr);
     totalPunches++;
+
+    rawPunchesList.push({
+      code,
+      dateRaw,
+      timeRaw,
+      dateStr,
+      timeStr,
+      punchType,
+      punchSource,
+      machineNumber,
+      machineName,
+    });
 
     const key = `${code}||${dateStr}`;
     if (!punchesByEmpDate[key]) {
@@ -250,6 +303,19 @@ export async function importExcelTimesheet(
     VALUES (?, ?, 'official', 20000, 40000, ?, 'active')
   `);
 
+  // Lưu dữ liệu thô: Kiểm tra trùng theo (employee_code, date_formatted, time_formatted, machine_number)
+  const insertRawStmt = db.prepare(`
+    INSERT OR IGNORE INTO raw_attendances (
+      file_id, employee_code, date_raw, time_raw,
+      date_formatted, time_formatted, punch_type, punch_source,
+      machine_number, machine_name
+    ) VALUES (
+      ?, ?, ?, ?,
+      ?, ?, ?, ?,
+      ?, ?
+    )
+  `);
+
   const upsertAttendanceStmt = db.prepare(`
     INSERT INTO attendances (
       employee_code, attendance_date, check_in, check_out,
@@ -266,16 +332,42 @@ export async function importExcelTimesheet(
       is_late = excluded.is_late
   `);
 
-  const runImport = db.transaction(() => {
-    // Lưu lịch sử file
-    insertFileStmt.run(savedFileName, originalName, filePath, rawRows.length - 1);
+  let fileId = 0;
+  let newRawRows = 0;
+  let duplicateRawRows = 0;
 
-    // Tự động thêm nhân viên mới nếu chưa có
+  const runImport = db.transaction(() => {
+    // 3.1 Lưu lịch sử file
+    const fileResult = insertFileStmt.run(savedFileName, originalName, filePath, rawRows.length - 1);
+    fileId = Number(fileResult.lastInsertRowid);
+
+    // 3.2 Tự động thêm nhân viên mới nếu chưa có
     for (const code of allCodes) {
       insertEmpStmt.run(code, `Nhân viên ${code}`, minDate);
     }
 
-    // Lưu bảng công từng ngày
+    // 3.3 Lưu dữ liệu thô 100% vào raw_attendances và phát hiện trùng
+    for (const p of rawPunchesList) {
+      const res = insertRawStmt.run(
+        fileId,
+        p.code,
+        p.dateRaw,
+        p.timeRaw,
+        p.dateStr,
+        p.timeStr,
+        p.punchType,
+        p.punchSource,
+        p.machineNumber,
+        p.machineName
+      );
+      if (res.changes > 0) {
+        newRawRows++;
+      } else {
+        duplicateRawRows++;
+      }
+    }
+
+    // 3.4 Lưu bảng công tổng hợp từng ngày vào attendances
     for (const [key, times] of Object.entries(punchesByEmpDate)) {
       const [empCode, attDate] = key.split('||');
       const calc = calculateAttendanceHours(times);
@@ -306,6 +398,9 @@ export async function importExcelTimesheet(
     success: true,
     savedFileName,
     totalRows: rawRows.length - 1,
+    totalRawRows: rawPunchesList.length,
+    newRawRows,
+    duplicateRawRows,
     totalPunches,
     totalDays: Object.keys(punchesByEmpDate).length,
     uniqueEmployees: allCodes.size,
@@ -395,6 +490,43 @@ export function getAttendances(date?: string) {
       ORDER BY CAST(a.employee_code AS INTEGER) ASC, a.employee_code ASC
     `)
     .all(queryDate);
+}
+
+/**
+ * Lấy dữ liệu thô đầu vào từ máy chấm công để khách hàng kiểm tra thực tế
+ */
+export interface RawAttendanceFilter {
+  date?: string;
+  employee_code?: string;
+  file_id?: number;
+}
+
+export function getRawAttendances(filter?: RawAttendanceFilter) {
+  const db = getDb();
+  let sql = `
+    SELECT r.*, e.name as employee_name
+    FROM raw_attendances r
+    LEFT JOIN employees e ON r.employee_code = e.code
+    WHERE 1=1
+  `;
+  const params: any[] = [];
+
+  if (filter?.date) {
+    sql += ` AND r.date_formatted = ?`;
+    params.push(filter.date);
+  }
+  if (filter?.employee_code) {
+    sql += ` AND r.employee_code = ?`;
+    params.push(filter.employee_code);
+  }
+  if (filter?.file_id) {
+    sql += ` AND r.file_id = ?`;
+    params.push(filter.file_id);
+  }
+
+  sql += ` ORDER BY r.date_formatted DESC, r.time_formatted ASC, CAST(r.employee_code AS INTEGER) ASC`;
+
+  return db.prepare(sql).all(...params);
 }
 
 /**

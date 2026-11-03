@@ -45,6 +45,28 @@ CREATE TABLE IF NOT EXISTS import_files (
 
 
 -- ============================================================
+-- 3.1 BẢNG LƯU DỮ LIỆU THÔ ĐẦU VÀO TỪ MÁY CHẤM CÔNG (RAW DATA)
+-- Lưu nguyên bản toàn bộ 100% dòng và cột từ file Excel
+-- ============================================================
+CREATE TABLE IF NOT EXISTS raw_attendances (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_id INTEGER,                            -- Tham chiếu file import
+    employee_code TEXT NOT NULL,                -- Cột "Mã"
+    date_raw TEXT,                              -- Cột "Ngày" gốc từ Excel (e.g. 46296)
+    time_raw TEXT,                              -- Cột "Giờ" gốc từ Excel (e.g. 46296.56319)
+    date_formatted DATE,                        -- Ngày đã quy đổi (YYYY-MM-DD)
+    time_formatted TEXT,                        -- Giờ đã quy đổi (HH:mm:ss)
+    punch_type INTEGER,                         -- Cột "Kiểu chấm" (e.g. 255)
+    punch_source INTEGER,                       -- Cột "Nguồn chấm" (e.g. 1)
+    machine_number INTEGER,                     -- Cột "Mã số máy" (e.g. 1)
+    machine_name TEXT,                          -- Cột "Tên máy" (e.g. Máy MCC00001)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(employee_code, date_formatted, time_formatted, machine_number)
+);
+
+
+
+-- ============================================================
 -- 4. BẢNG DỮ LIỆU CHẤM CÔNG HÀNG NGÀY
 -- ============================================================
 CREATE TABLE IF NOT EXISTS attendances (

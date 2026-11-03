@@ -72,11 +72,30 @@ export interface ImportFileRecord {
   imported_at: string;
 }
 
+export interface RawAttendanceRecord {
+  id?: number;
+  file_id?: number;
+  employee_code: string;
+  employee_name?: string;
+  date_raw?: string;
+  time_raw?: string;
+  date_formatted: string;
+  time_formatted: string;
+  punch_type?: number;
+  punch_source?: number;
+  machine_number?: number;
+  machine_name?: string;
+  created_at?: string;
+}
+
 export interface ImportResult {
   success: boolean;
   message?: string;
   savedFileName?: string;
   totalRows?: number;
+  totalRawRows?: number;
+  newRawRows?: number;
+  duplicateRawRows?: number;
   totalPunches?: number;
   totalDays?: number;
   uniqueEmployees?: number;
@@ -109,6 +128,11 @@ export interface ElectronAPI {
   deleteEmployee: (id: number) => Promise<{ success: boolean; message?: string }>;
 
   getAttendances: (date?: string) => Promise<AttendanceRecord[]>;
+  getRawAttendances: (filters?: {
+    date?: string;
+    employee_code?: string;
+    file_id?: number;
+  }) => Promise<RawAttendanceRecord[]>;
   updateAttendanceStatus: (params: {
     id: number;
     late_permitted?: number;

@@ -13,6 +13,7 @@ import {
   saveEmployee,
   deleteEmployee,
   getAttendances,
+  getRawAttendances,
   updateAttendanceStatus,
   getLeaveRequests,
   getAttendanceBonuses,
@@ -186,6 +187,16 @@ app.whenReady().then(() => {
       return getAttendances(date);
     } catch (err: any) {
       console.error('Lỗi lấy chấm công:', err);
+      return [];
+    }
+  });
+
+  // 6.1 Dữ liệu thô máy chấm công (Raw Logs)
+  ipcMain.handle('attendance:getRaw', async (_event, filters) => {
+    try {
+      return getRawAttendances(filters);
+    } catch (err: any) {
+      console.error('Lỗi lấy dữ liệu thô chấm công:', err);
       return [];
     }
   });
