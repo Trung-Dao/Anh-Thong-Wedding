@@ -86,23 +86,23 @@ export const AttendanceView: React.FC = () => {
           onClick={() => setActiveTab('summary')}
           style={{ padding: '8px 16px', fontWeight: '600' }}
         >
-          📊 Bảng Chấm Công Tổng Hợp (Theo Ngày)
+          📊 Bảng Chấm Công Tổng Hợp
         </button>
         <button
           className={`btn ${activeTab === 'raw' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('raw')}
           style={{ padding: '8px 16px', fontWeight: '600' }}
         >
-          📋 Dữ Liệu Thô Máy Chấm Công (Nguyên Bản Excel)
+          📋 Dữ Liệu Thô Máy Chấm Công từ Excel
         </button>
       </div>
 
       {activeTab === 'summary' ? (
-        /* ================= 1. TAB BẢNG TỔNG HỢP THEO NGÀY ================= */
+        /* ================= 1. TAB BẢNG TỔNG HỢP THEO THÁNG ================= */
         <div className="card">
           <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600' }}>Chọn Ngày Xem:</label>
+              <label style={{ fontSize: '13px', fontWeight: '600' }}>Chọn tháng:</label>
               <input
                 type="date"
                 className="form-input"
