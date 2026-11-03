@@ -95,7 +95,7 @@ export const LeaveApprovalView: React.FC = () => {
                     </td> */}
                     <td>
                       {isPermitted ? (
-                        <span className="badge badge-success">Trễ có phép</span>
+                        <span className="badge badge-warning">Trễ có phép</span>
                       ) : (
                         <span className="badge badge-danger">Trễ không phép</span>
                       )}
