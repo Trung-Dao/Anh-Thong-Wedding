@@ -220,17 +220,6 @@ export const AttendanceView: React.FC = () => {
                           <span className="badge badge-neutral">Đúng giờ</span>
                         )}
                       </td>
-                      {/* <td>
-                        {r.is_leave === 1 ? (
-                          r.leave_permitted === 1 ? (
-                            <span className="badge badge-info">Nghỉ có phép</span>
-                          ) : (
-                            <span className="badge badge-danger">Nghỉ không phép</span>
-                          )
-                        ) : (
-                          <span className="badge badge-success">Có đi làm</span>
-                        )}
-                      </td> */}
                       <td style={{ fontSize: '12px', color: '#64748b' }}>{r.note || '--'}</td>
                     </tr>
                   ))
