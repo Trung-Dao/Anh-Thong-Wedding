@@ -28,5 +28,8 @@ dist-ssr
 # *.db
 *.db-journal
 *.db-wal
+
+# Uploads
+uploads/
 *.db-shm
 release/

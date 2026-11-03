@@ -3,6 +3,8 @@ import path from 'path';
 import * as XLSX from 'xlsx';
 import { getDb, getStorageDir } from '../database/db';
 
+const xlsxLib: any = (XLSX as any).default || XLSX;
+
 export interface ImportResult {
   success: boolean;
   message?: string;
@@ -14,38 +16,82 @@ export interface ImportResult {
   dateRange?: { from: string; to: string };
 }
 
+/**
+ * Chuyển đổi ô Ngày trong Excel sang YYYY-MM-DD
+ * Hỗ trợ định dạng số serial Excel (ví dụ 46296), chuỗi ngày YYYY-MM-DD, DD/MM/YYYY hoặc Date object
+ */
 function parseDateCell(val: any): string | null {
+  if (val === null || val === undefined || val === '') return null;
+
+  // 1. Nếu là số serial Excel (e.g. 46296)
   if (typeof val === 'number') {
-    const d = XLSX.SSF.parse_date_code(val);
-    if (!d) return null;
-    return `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`;
-  }
-  if (typeof val === 'string') {
-    const s = val.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-      const parts = s.split('/');
-      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    // 25569 là số ngày từ 1900-01-01 đến mốc Unix Epoch 1970-01-01
+    const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+    if (!isNaN(date.getTime())) {
+      const y = date.getUTCFullYear();
+      const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(date.getUTCDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
     }
-    return s;
   }
+
+  // 2. Nếu là Date object
+  // if (val instanceof Date && !isNaN(val.getTime())) {
+  //   const y = val.getFullYear();
+  //   const m = String(val.getMonth() + 1).padStart(2, '0');
+  //   const d = String(val.getDate()).padStart(2, '0');
+  //   return `${y}-${m}-${d}`;
+  // }
+
+  // 3. Nếu là chuỗi
+  // if (typeof val === 'string') {
+  //   const s = val.trim();
+  //   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  //   if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+  //     const parts = s.split('/');
+  //     return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+  //   }
+  //   return s;
+  // }
+
   return null;
 }
 
+/**
+ * Chuyển đổi ô Giờ trong Excel sang HH:mm:ss
+ * Hỗ trợ số thực serial Excel (e.g. 46296.56319 hoặc 0.56319), chuỗi HH:mm, HH:mm:ss hoặc Date object
+ */
 function parseTimeCell(val: any): string | null {
+  if (val === null || val === undefined || val === '') return null;
+
+  // 1. Nếu là số serial Excel (lấy phần thập phân thể hiện thời gian trong ngày)
   if (typeof val === 'number') {
-    const t = XLSX.SSF.parse_date_code(val);
-    if (!t) return null;
-    return `${String(t.H).padStart(2, '0')}:${String(t.M).padStart(2, '0')}:${String(t.S).padStart(2, '0')}`;
+    const frac = val >= 1 ? val - Math.floor(val) : val;
+    const totalSeconds = Math.round(frac * 86400);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
-  if (typeof val === 'string') {
-    const s = val.trim();
-    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) {
-      const p = s.split(':');
-      return `${p[0].padStart(2, '0')}:${p[1].padStart(2, '0')}:${(p[2] || '00').padStart(2, '0')}`;
-    }
-    return s;
-  }
+
+  // 2. Nếu là Date object
+  // if (val instanceof Date && !isNaN(val.getTime())) {
+  //   const h = String(val.getHours()).padStart(2, '0');
+  //   const m = String(val.getMinutes()).padStart(2, '0');
+  //   const s = String(val.getSeconds()).padStart(2, '0');
+  //   return `${h}:${m}:${s}`;
+  // }
+
+  // 3. Nếu là chuỗi
+  // if (typeof val === 'string') {
+  //   const s = val.trim();
+  //   if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) {
+  //     const p = s.split(':');
+  //     return `${p[0].padStart(2, '0')}:${p[1].padStart(2, '0')}:${(p[2] || '00').padStart(2, '0')}`;
+  //   }
+  //   return s;
+  // }
+
   return null;
 }
 
@@ -132,13 +178,16 @@ export async function importExcelTimesheet(
   fs.writeFileSync(filePath, buffer);
 
   // 2. Đọc nội dung file Excel
-  const wb = XLSX.read(buffer, { type: 'buffer' });
+  const readFn = xlsxLib.read || XLSX.read;
+  const utilsObj = xlsxLib.utils || XLSX.utils;
+
+  const wb = readFn(buffer, { type: 'buffer' });
   if (!wb.SheetNames || wb.SheetNames.length === 0) {
     throw new Error('File Excel không có Sheet dữ liệu nào!');
   }
 
   const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rawRows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  const rawRows: any[][] = utilsObj.sheet_to_json(sheet, { header: 1 });
 
   if (!rawRows || rawRows.length < 2) {
     throw new Error('File Excel không có dữ liệu để nhập!');
