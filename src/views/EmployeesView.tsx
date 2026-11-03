@@ -108,9 +108,9 @@ export const EmployeesView: React.FC = () => {
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="all">Tất cả loại NV</option>
-            <option value="official">Chính thức (20k/h)</option>
-            <option value="probation">Học việc (16.666k/h)</option>
+            <option value="all">Tất cả nhân viên</option>
+            <option value="official">NV Chính thức</option>
+            <option value="probation">NV Học việc</option>
           </select>
 
           <button className="btn btn-secondary btn-sm" onClick={loadEmployees} disabled={loading}>
@@ -265,7 +265,7 @@ export const EmployeesView: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ fontSize: '12px', fontWeight: '600', display: 'block', marginBottom: '4px' }}>
-                      Loại Nhân Viên
+                      Phân loại
                     </label>
                     <select
                       className="form-input"
@@ -280,8 +280,8 @@ export const EmployeesView: React.FC = () => {
                         });
                       }}
                     >
-                      <option value="official">Chính thức (20.000đ/h)</option>
-                      <option value="probation">Học việc (16.666đ/h)</option>
+                      <option value="official">Chính thức</option>
+                      <option value="probation">Học việc</option>
                     </select>
                   </div>
 
