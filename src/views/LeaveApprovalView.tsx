@@ -42,12 +42,6 @@ export const LeaveApprovalView: React.FC = () => {
     }
   };
 
-  // const pendingCount = items.filter(
-  //   (i) =>
-  //     (i.is_late === 1 && i.late_permitted === 0 && !i.note?.includes('Đã duyệt')) ||
-  //     (i.is_leave === 1 && i.leave_permitted === 0 && !i.note?.includes('Đã duyệt'))
-  // ).length;
-
   return (
     <div className="card">
       <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
@@ -137,7 +131,7 @@ export const LeaveApprovalView: React.FC = () => {
                           <button
                             className="btn btn-primary btn-sm"
                             style={{
-                              backgroundColor: isPermitted ? '#15803d' : undefined,
+                              backgroundColor: '#15803d',
                               fontSize: '11px',
                               padding: '4px 8px',
                             }}
