@@ -55,7 +55,7 @@ File db và các file import nên lưu vào thư mục an toàn tại app.getPat
     166660/ngày
   Lương tăng ca: áp dụng cho chính thức và học việc là: 40000/giờ
 
-- Dữ liệu máy chấm công xuất ra định dang excel gồm dòng/cột và dữ liệu như bên dưới.
+- Dữ liệu máy chấm công xuất ra định dang excel gồm dòng/cột và dữ liệu như bên dưới. Còn file dữ liệu mẫu tôi để tại ./data/Template 102026.xlsx
   	B	C	D	E	F	G	H
   1	Mã	Ngày	Giờ	Kiểu chấm	Nguồn chấm	Mã số máy	Tên máy
   2	3	46296	46296.56319	255	1	1	Máy MCC00001
@@ -66,16 +66,7 @@ File db và các file import nên lưu vào thư mục an toàn tại app.getPat
   7	5	46296	46296.69653	255	1	1	Máy MCC00001
   8	1	46296	46296.69653	255	1	1	Máy MCC00001
   9	6	46296	46296.69722	255	1	1	Máy MCC00001
-  10	2	46296	46296.69722	255	1	1	Máy MCC00001
-  11	1	46297	46297.29097	255	1	1	Máy MCC00001
-  12	5	46297	46297.30903	255	1	1	Máy MCC00001
-  13	2	46297	46297.31944	255	1	1	Máy MCC00001
-  14	6	46297	46297.32569	255	1	1	Máy MCC00001
-  15	2	46297	46297.72083	255	1	1	Máy MCC00001
-  16	5	46297	46297.72083	255	1	1	Máy MCC00001
-  17	1	46297	46297.72083	255	1	1	Máy MCC00001
-  18	6	46297	46297.72153	255	1	1	Máy MCC00001
-  19	1	46298	46298.29028	255	1	1	Máy MCC00001
+
 
 - Quản lý nhân viên và bảng lương
   Bảng nhân viên: bổ sung loại nhân viên, ngày vào làm, trạng thái
