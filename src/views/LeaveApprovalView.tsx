@@ -61,10 +61,10 @@ export const LeaveApprovalView: React.FC = () => {
               <th>Họ Và Tên</th>
               <th>Ngày Chấm Công</th>
               <th>Giờ Vào - Ra</th>
+              {/* <th>Tình Trạng</th> */}
               <th>Tình Trạng</th>
-              <th>Trạng Thái Phê Duyệt</th>
               <th>Ghi Chú</th>
-              <th style={{ textAlign: 'center', width: '220px' }}>Hành Động Quản Lý</th>
+              <th style={{ textAlign: 'center', width: '220px' }}>Hành Động</th>
             </tr>
           </thead>
           <tbody>
@@ -90,9 +90,9 @@ export const LeaveApprovalView: React.FC = () => {
                     <td>
                       {item.check_in || '--:--'} → {item.check_out || '--:--'}
                     </td>
-                    <td>
+                    {/* <td>
                       <span className="badge badge-warning">Đi trễ (sau 7:15)</span>
-                    </td>
+                    </td> */}
                     <td>
                       {isPermitted ? (
                         <span className="badge badge-success">Trễ có phép</span>
