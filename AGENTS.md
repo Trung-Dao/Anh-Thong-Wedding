@@ -20,7 +20,6 @@ Dữ liệu thời gian trong excel là số serial ngày, giờ.
     Ghi nhận đi trễ
     Trễ có phép
     Trễ không phép
-    Xin nghỉ
   Duyệt phép
 4. Thưởng chuyên cần theo tháng
 5. Bảng nhân viên gồm:
