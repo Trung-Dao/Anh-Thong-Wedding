@@ -31,8 +31,6 @@ export interface AttendanceRecord {
   ot_hours: number;
   is_late: number;
   late_permitted: number;
-  is_leave: number;
-  leave_permitted: number;
   note?: string;
 }
 
@@ -136,7 +134,6 @@ export interface ElectronAPI {
   updateAttendanceStatus: (params: {
     id: number;
     late_permitted?: number;
-    leave_permitted?: number;
     note?: string;
   }) => Promise<{ success: boolean; message?: string }>;
   getLeaveRequests: () => Promise<AttendanceRecord[]>;

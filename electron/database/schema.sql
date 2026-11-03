@@ -82,9 +82,6 @@ CREATE TABLE IF NOT EXISTS attendances (
     is_late INTEGER DEFAULT 0,                  -- Đi trễ (vào sau 7:15)
     late_permitted INTEGER DEFAULT 0,           -- Trễ có phép (1: có phép, 0: không phép)
     
-    is_leave INTEGER DEFAULT 0,                 -- Nghỉ làm (1: nghỉ ngày này)
-    leave_permitted INTEGER DEFAULT 0,          -- Nghỉ có phép (1: có phép, 0: không phép)
-    
     note TEXT,                                  -- Ghi chú bổ sung
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(employee_code, attendance_date)

@@ -319,10 +319,10 @@ export async function importExcelTimesheet(
   const upsertAttendanceStmt = db.prepare(`
     INSERT INTO attendances (
       employee_code, attendance_date, check_in, check_out,
-      regular_hours, ot_hours, is_late, late_permitted, is_leave, leave_permitted, note
+      regular_hours, ot_hours, is_late, late_permitted, note
     ) VALUES (
       ?, ?, ?, ?,
-      ?, ?, ?, 0, 0, 0, ?
+      ?, ?, ?, 0, ?
     )
     ON CONFLICT(employee_code, attendance_date) DO UPDATE SET
       check_in = excluded.check_in,
@@ -563,18 +563,16 @@ export function getRawAttendances(filter?: RawAttendanceFilter) {
 export function updateAttendanceStatus(params: {
   id: number;
   late_permitted?: number;
-  leave_permitted?: number;
   note?: string;
 }) {
   const db = getDb();
-  const { id, late_permitted, leave_permitted, note } = params;
+  const { id, late_permitted, note } = params;
   db.prepare(`
     UPDATE attendances SET
       late_permitted = COALESCE(?, late_permitted),
-      leave_permitted = COALESCE(?, leave_permitted),
       note = COALESCE(?, note)
     WHERE id = ?
-  `).run(late_permitted ?? null, leave_permitted ?? null, note ?? null, id);
+  `).run(late_permitted ?? null, note ?? null, id);
   return { success: true };
 }
 
@@ -588,7 +586,7 @@ export function getLeaveRequests() {
       SELECT a.*, e.name as employee_name, e.employee_type
       FROM attendances a
       LEFT JOIN employees e ON a.employee_code = e.code
-      WHERE a.is_late = 1 OR a.is_leave = 1
+      WHERE a.is_late = 1
       ORDER BY a.attendance_date DESC, CAST(a.employee_code AS INTEGER) ASC
     `)
     .all();
@@ -618,12 +616,12 @@ export function getAttendanceBonuses(month: string) {
       `)
       .all(emp.code, month);
 
-    const attendedDays = attendances.filter((a) => (a.regular_hours > 0 || a.check_in) && a.is_leave !== 1).length;
-    const leaveDays = attendances.filter((a) => a.is_leave === 1).length;
+    const attendedDays = attendances.filter((a) => a.regular_hours > 0 || a.check_in).length;
+    const leaveDays = Math.max(0, daysInMonth - attendedDays);
 
     // Quy định: Điều kiện không nghỉ ngày nào kể cả có phép hoặc không phép.
     // Đi trễ vẫn tính là có đi làm. Phải làm đủ các ngày trong tháng (đặc thù không nghỉ chủ nhật/lễ).
-    const isEligible = attendedDays >= daysInMonth && leaveDays === 0;
+    const isEligible = attendedDays >= daysInMonth;
 
     let consecutiveMonths = 0;
     let bonusAmount = 0;
@@ -714,7 +712,7 @@ export function getMonthlySalaries(month: string) {
     let latePenalty = 0;
 
     for (const att of attendances) {
-      if ((att.regular_hours > 0 || att.check_in) && att.is_leave !== 1) {
+      if (att.regular_hours > 0 || att.check_in) {
         totalWorkDays++;
       }
       totalRegularHours += att.regular_hours || 0;

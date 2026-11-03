@@ -65,6 +65,20 @@ export function initDatabase(): Database.Database {
   if (schemaSql) {
     dbInstance.exec(schemaSql);
     console.log('==> [SQLite] Đã kiểm tra và khởi tạo các bảng thành công!');
+
+    // Tự động gỡ bỏ các cột is_leave, leave_permitted cũ nếu còn tồn tại trong database cũ
+    // try {
+    //   const cols = dbInstance.prepare("PRAGMA table_info(attendances)").all() as any[];
+    //   const colNames = cols.map((c) => c.name);
+    //   if (colNames.includes('is_leave')) {
+    //     dbInstance.exec('ALTER TABLE attendances DROP COLUMN is_leave;');
+    //   }
+    //   if (colNames.includes('leave_permitted')) {
+    //     dbInstance.exec('ALTER TABLE attendances DROP COLUMN leave_permitted;');
+    //   }
+    // } catch (e) {
+    //   // Bỏ qua nếu SQLite phiên bản cũ không hỗ trợ DROP COLUMN
+    // }
   } else {
     console.warn('==> [SQLite] Cảnh báo: Không tìm thấy file schema.sql!');
   }

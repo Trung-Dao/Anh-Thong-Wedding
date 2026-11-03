@@ -33,7 +33,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateAttendanceStatus: (params: {
     id: number;
     late_permitted?: number;
-    leave_permitted?: number;
     note?: string;
   }) => ipcRenderer.invoke('attendance:updateStatus', params),
   getLeaveRequests: () => ipcRenderer.invoke('attendance:getLeaveRequests'),
