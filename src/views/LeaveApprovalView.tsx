@@ -12,7 +12,7 @@ export const LeaveApprovalView: React.FC = () => {
         const list = await window.electronAPI.getLeaveRequests();
         setItems(list || []);
       } catch (err) {
-        console.error('Lỗi tải danh sách duyệt phép:', err);
+        console.error('Lỗi tải danh sách duyệt đi trễ:', err);
       } finally {
         setLoading(false);
       }
@@ -29,11 +29,10 @@ export const LeaveApprovalView: React.FC = () => {
       try {
         await window.electronAPI.updateAttendanceStatus({
           id: record.id,
-          late_permitted: record.is_late === 1 ? (permitted ? 1 : 0) : undefined,
-          leave_permitted: record.is_leave === 1 ? (permitted ? 1 : 0) : undefined,
+          late_permitted: permitted ? 1 : 0,
           note: permitted
-            ? 'Có phép'
-            : 'Không phép (Trừ 1/2 ngày lương)',
+            ? 'Trễ có phép'
+            : 'Trễ không phép (Trừ 1/2 ngày lương)',
         });
         loadRequests();
       } catch (err: any) {
@@ -46,8 +45,7 @@ export const LeaveApprovalView: React.FC = () => {
     <div className="card">
       <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span className="card-title">📝 Danh Sách Duyệt Phép & Trễ Giờ</span>
-          {/* <span className="badge badge-warning">Cần xem xét: {pendingCount}</span> */}
+          <span className="card-title">📝 Danh Sách Duyệt Đi Trễ Giờ</span>
         </div>
 
         <button className="btn btn-secondary btn-sm" onClick={loadRequests} disabled={loading}>
@@ -73,14 +71,12 @@ export const LeaveApprovalView: React.FC = () => {
             {items.length === 0 ? (
               <tr>
                 <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                  Hiện tại không có trường hợp đi trễ hoặc nghỉ phép nào cần xử lý.
+                  Hiện tại không có trường hợp đi trễ nào cần xử lý.
                 </td>
               </tr>
             ) : (
               items.map((item) => {
-                const isPermitted =
-                  (item.is_late === 1 && item.late_permitted === 1) ||
-                  (item.is_leave === 1 && item.leave_permitted === 1);
+                const isPermitted = item.late_permitted === 1;
 
                 return (
                   <tr key={item.id}>
@@ -95,12 +91,7 @@ export const LeaveApprovalView: React.FC = () => {
                       {item.check_in || '--:--'} → {item.check_out || '--:--'}
                     </td>
                     <td>
-                      {item.is_late === 1 && (
-                        <span className="badge badge-warning">Đi trễ (sau 7:15)</span>
-                      )}
-                      {item.is_leave === 1 && (
-                        <span className="badge badge-danger">Nghỉ làm</span>
-                      )}
+                      <span className="badge badge-warning">Đi trễ (sau 7:15)</span>
                     </td>
                     <td>
                       {isPermitted ? (
@@ -126,7 +117,6 @@ export const LeaveApprovalView: React.FC = () => {
                           >
                             ✕ Không Phép
                           </button>
-
                         ) : (
                           <button
                             className="btn btn-primary btn-sm"
@@ -142,33 +132,33 @@ export const LeaveApprovalView: React.FC = () => {
                         )}
                       </div>
                     </td>
-        </tr>
-        );
+                  </tr>
+                );
               })
             )}
-      </tbody>
-    </table>
-      </div >
+          </tbody>
+        </table>
+      </div>
 
-  <div
-    style={{
-      padding: '16px 20px',
-      backgroundColor: '#f8fafc',
-      borderTop: '1px solid var(--border-color)',
-      fontSize: '13px',
-      color: '#475569',
-    }}
-  >
-    💡 <strong>Quy định phê duyệt:</strong>
-    <ul style={{ margin: '6px 0 0 20px', lineHeight: '1.6' }}>
-      <li>
-        <strong>Duyệt Có Phép:</strong> Đi trễ bao nhiêu giờ thì tính lương bấy nhiêu giờ thực tế đã làm việc.
-      </li>
-      <li>
-        <strong>Không Phép:</strong> Bị phạt trừ <strong>1/2 ngày lương chính</strong> (100.000đ đối với nhân viên chính thức, 83.330đ đối với học việc).
-      </li>
-    </ul>
-  </div>
-    </div >
+      <div
+        style={{
+          padding: '16px 20px',
+          backgroundColor: '#f8fafc',
+          borderTop: '1px solid var(--border-color)',
+          fontSize: '13px',
+          color: '#475569',
+        }}
+      >
+        💡 <strong>Quy định phê duyệt đi trễ:</strong>
+        <ul style={{ margin: '6px 0 0 20px', lineHeight: '1.6' }}>
+          <li>
+            <strong>Duyệt Có Phép:</strong> Đi trễ bao nhiêu giờ thì tính lương bấy nhiêu giờ thực tế đã làm việc.
+          </li>
+          <li>
+            <strong>Không Phép:</strong> Bị phạt trừ <strong>1/2 ngày lương chính</strong> (100.000đ đối với nhân viên chính thức, 83.330đ đối với học việc).
+          </li>
+        </ul>
+      </div>
+    </div>
   );
 };
