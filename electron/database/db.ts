@@ -2,7 +2,9 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { app } from 'electron';
+import electron from 'electron';
+
+const app = electron?.app;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -76,3 +78,22 @@ export function getDb(): Database.Database {
   }
   return dbInstance;
 }
+
+/**
+ * Lấy thư mục lưu trữ các file Excel được import vào hệ thống
+ * Tuân thủ quy định: Lưu trữ tại app.getPath('userData') khi đóng gói
+ */
+export function getStorageDir(): string {
+  let baseDir: string;
+  if (app && app.isPackaged) {
+    baseDir = app.getPath('userData');
+  } else {
+    baseDir = path.join(process.cwd(), 'uploads');
+  }
+  const importsDir = path.join(baseDir, 'imports');
+  if (!fs.existsSync(importsDir)) {
+    fs.mkdirSync(importsDir, { recursive: true });
+  }
+  return importsDir;
+}
+

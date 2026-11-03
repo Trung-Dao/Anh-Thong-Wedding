@@ -1,125 +1,178 @@
-import React, { useState } from 'react';
-
-interface PendingItem {
-  id: number;
-  employee_code: string;
-  employee_name: string;
-  type: 'late' | 'leave';
-  date: string;
-  time_or_reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-}
+import React, { useState, useEffect } from 'react';
+import type { AttendanceRecord } from '../types';
 
 export const LeaveApprovalView: React.FC = () => {
-  const [items, setItems] = useState<PendingItem[]>([
-    {
-      id: 1,
-      employee_code: '3',
-      employee_name: 'Lê Hoàng Cường',
-      type: 'late',
-      date: '2026-11-02',
-      time_or_reason: 'Vào lúc 07:35 (Trễ 35 phút - Lý do: kẹt xe hỏng xe)',
-      status: 'pending',
-    },
-    {
-      id: 2,
-      employee_code: '6',
-      employee_name: 'Võ Quốc Em',
-      type: 'leave',
-      date: '2026-11-02',
-      time_or_reason: 'Xin nghỉ việc gia đình có báo trước',
-      status: 'pending',
-    },
-  ]);
+  const [items, setItems] = useState<AttendanceRecord[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleAction = (id: number, status: 'approved' | 'rejected' | 'pending') => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status } : item))
-    );
+  const loadRequests = async () => {
+    if (window.electronAPI?.getLeaveRequests) {
+      setLoading(true);
+      try {
+        const list = await window.electronAPI.getLeaveRequests();
+        setItems(list || []);
+      } catch (err) {
+        console.error('Lỗi tải danh sách duyệt phép:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
+
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  const handleApprove = async (record: AttendanceRecord, permitted: boolean) => {
+    if (!record.id) return;
+    if (window.electronAPI?.updateAttendanceStatus) {
+      try {
+        await window.electronAPI.updateAttendanceStatus({
+          id: record.id,
+          late_permitted: record.is_late === 1 ? (permitted ? 1 : 0) : undefined,
+          leave_permitted: record.is_leave === 1 ? (permitted ? 1 : 0) : undefined,
+          note: permitted
+            ? 'Đã duyệt: Có phép'
+            : 'Đã duyệt: Không phép (Trừ 1/2 ngày lương)',
+        });
+        loadRequests();
+      } catch (err: any) {
+        alert(`Lỗi phê duyệt: ${err.message}`);
+      }
+    }
+  };
+
+  const pendingCount = items.filter(
+    (i) =>
+      (i.is_late === 1 && i.late_permitted === 0 && !i.note?.includes('Đã duyệt')) ||
+      (i.is_leave === 1 && i.leave_permitted === 0 && !i.note?.includes('Đã duyệt'))
+  ).length;
 
   return (
     <div className="card">
-      <div className="card-header">
-        <span className="card-title">📝 Danh Sách Yêu Cầu Duyệt Phép & Trễ Giờ</span>
-        <span className="badge badge-warning">
-          Chờ duyệt: {items.filter((i) => i.status === 'pending').length}
-        </span>
+      <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span className="card-title">📝 Danh Sách Duyệt Phép & Trễ Giờ</span>
+          <span className="badge badge-warning">Cần xem xét: {pendingCount}</span>
+        </div>
+
+        <button className="btn btn-secondary btn-sm" onClick={loadRequests} disabled={loading}>
+          {loading ? 'Đang tải...' : '🔄 Làm Mới'}
+        </button>
       </div>
 
       <div className="table-responsive">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Mã NV</th>
+              <th style={{ width: '70px' }}>Mã NV</th>
               <th>Họ Và Tên</th>
-              <th>Loại Yêu Cầu</th>
-              <th>Ngày Áp Dụng</th>
-              <th>Nội Dung / Lý Do</th>
+              <th>Ngày Chấm Công</th>
+              <th>Giờ Vào - Ra</th>
               <th>Tình Trạng</th>
-              <th style={{ textAlign: 'center', width: '220px' }}>Hành Động Phê Duyệt</th>
+              <th>Trạng Thái Phê Duyệt</th>
+              <th>Ghi Chú</th>
+              <th style={{ textAlign: 'center', width: '220px' }}>Hành Động Quản Lý</th>
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
-              <tr key={item.id}>
-                <td><strong>#{item.employee_code}</strong></td>
-                <td style={{ fontWeight: '600' }}>{item.employee_name}</td>
-                <td>
-                  {item.type === 'late' ? (
-                    <span className="badge badge-warning">Giải trình vào trễ</span>
-                  ) : (
-                    <span className="badge badge-info">Đơn xin nghỉ</span>
-                  )}
-                </td>
-                <td>{item.date}</td>
-                <td>{item.time_or_reason}</td>
-                <td>
-                  {item.status === 'pending' && (
-                    <span className="badge badge-warning">Chờ quản lý duyệt</span>
-                  )}
-                  {item.status === 'approved' && (
-                    <span className="badge badge-success">Đã duyệt Có Phép</span>
-                  )}
-                  {item.status === 'rejected' && (
-                    <span className="badge badge-danger">Không duyệt (Không Phép)</span>
-                  )}
-                </td>
-                <td style={{ textAlign: 'center' }}>
-                  {item.status === 'pending' ? (
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        style={{ backgroundColor: '#15803d' }}
-                        onClick={() => handleAction(item.id, 'approved')}
-                      >
-                        ✓ Duyệt Có Phép
-                      </button>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        style={{ color: '#b91c1c' }}
-                        onClick={() => handleAction(item.id, 'rejected')}
-                      >
-                        ✕ Không Phép (Trừ 1/2 ngày)
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => handleAction(item.id, 'pending')}
-                    >
-                      Hoàn tác
-                    </button>
-                  )}
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  Hiện tại không có trường hợp đi trễ hoặc nghỉ phép nào cần xử lý.
                 </td>
               </tr>
-            ))}
+            ) : (
+              items.map((item) => {
+                const isPermitted =
+                  (item.is_late === 1 && item.late_permitted === 1) ||
+                  (item.is_leave === 1 && item.leave_permitted === 1);
+                const isProcessed = item.note?.includes('Đã duyệt') || isPermitted;
+
+                return (
+                  <tr key={item.id}>
+                    <td>
+                      <strong style={{ color: 'var(--primary)' }}>#{item.employee_code}</strong>
+                    </td>
+                    <td style={{ fontWeight: '600' }}>
+                      {item.employee_name || `Nhân viên ${item.employee_code}`}
+                    </td>
+                    <td>{item.attendance_date}</td>
+                    <td>
+                      {item.check_in || '--:--'} → {item.check_out || '--:--'}
+                    </td>
+                    <td>
+                      {item.is_late === 1 && (
+                        <span className="badge badge-warning">Đi trễ (sau 7:15)</span>
+                      )}
+                      {item.is_leave === 1 && (
+                        <span className="badge badge-danger">Nghỉ làm</span>
+                      )}
+                    </td>
+                    <td>
+                      {isPermitted ? (
+                        <span className="badge badge-success">✓ Có Phép</span>
+                      ) : isProcessed ? (
+                        <span className="badge badge-danger">✕ Không Phép</span>
+                      ) : (
+                        <span className="badge badge-neutral">⏳ Chưa xét duyệt</span>
+                      )}
+                    </td>
+                    <td style={{ fontSize: '12px', color: '#64748b' }}>
+                      {item.note || '--'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          style={{
+                            backgroundColor: isPermitted ? '#15803d' : undefined,
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                          }}
+                          onClick={() => handleApprove(item, true)}
+                        >
+                          ✓ Duyệt Có Phép
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{
+                            color: '#b91c1c',
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                          }}
+                          onClick={() => handleApprove(item, false)}
+                        >
+                          ✕ Không Phép
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
 
-      <div style={{ padding: '16px 20px', backgroundColor: '#f8fafc', borderTop: '1px solid var(--border-color)', fontSize: '13px', color: '#475569' }}>
-        💡 <strong>Ghi chú quy định:</strong> Khi duyệt <em>"Có phép"</em>: Đi trễ bao nhiêu giờ tính bấy nhiêu giờ thực làm. Nếu <em>"Không phép"</em>: Bị trừ phạt 1/2 ngày lương chính (100.000đ với chính thức, 83.330đ với học việc).
+      <div
+        style={{
+          padding: '16px 20px',
+          backgroundColor: '#f8fafc',
+          borderTop: '1px solid var(--border-color)',
+          fontSize: '13px',
+          color: '#475569',
+        }}
+      >
+        💡 <strong>Quy định phê duyệt:</strong>
+        <ul style={{ margin: '6px 0 0 20px', lineHeight: '1.6' }}>
+          <li>
+            <strong>Duyệt Có Phép:</strong> Đi trễ bao nhiêu giờ thì tính lương bấy nhiêu giờ thực tế đã làm việc.
+          </li>
+          <li>
+            <strong>Không Phép:</strong> Bị phạt trừ <strong>1/2 ngày lương chính</strong> (100.000đ đối với nhân viên chính thức, 83.330đ đối với học việc).
+          </li>
+        </ul>
       </div>
     </div>
   );

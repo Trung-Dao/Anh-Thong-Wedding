@@ -1,21 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { TabId } from '../components/Sidebar';
+import type { DashboardStats } from '../types';
 
 interface DashboardViewProps {
   onNavigate: (tab: TabId) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalEmployees: 0,
+    activeEmployees: 0,
+    todayAttended: 0,
+    todayLate: 0,
+    monthlyBonusEligible: 0,
+  });
+
+  const loadStats = async () => {
+    if (window.electronAPI?.getDashboardStats) {
+      try {
+        const s = await window.electronAPI.getDashboardStats();
+        setStats(s);
+      } catch (err) {
+        console.error('Lỗi khi tải dữ liệu dashboard:', err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
   return (
     <div>
-      {/* 4 Card thống kê chính */}
+      {/* 4 Card thống kê chính từ CSDL thực tế */}
       <div className="stats-grid">
         <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => onNavigate('employees')}>
           <div className="stat-icon blue">👥</div>
           <div className="stat-info">
             <h3>Tổng Nhân Viên</h3>
-            <div className="stat-value">6</div>
-            <div className="stat-desc">6 Đang hoạt động</div>
+            <div className="stat-value">{stats.totalEmployees}</div>
+            <div className="stat-desc">{stats.activeEmployees} Đang hoạt động</div>
           </div>
         </div>
 
@@ -23,8 +47,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <div className="stat-icon green">⏱️</div>
           <div className="stat-info">
             <h3>Đi Làm Hôm Nay</h3>
-            <div className="stat-value">6/6</div>
-            <div className="stat-desc">Đã điểm danh đầy đủ</div>
+            <div className="stat-value">
+              {stats.todayAttended}/{stats.totalEmployees}
+            </div>
+            <div className="stat-desc">
+              {stats.todayAttended > 0 ? 'Đã ghi nhận chấm công' : 'Chưa có chấm công hôm nay'}
+            </div>
           </div>
         </div>
 
@@ -32,7 +60,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <div className="stat-icon amber">⚠️</div>
           <div className="stat-info">
             <h3>Đi Trễ Hôm Nay</h3>
-            <div className="stat-value">1</div>
+            <div className="stat-value">{stats.todayLate}</div>
             <div className="stat-desc">Vào sau 7:15 (Cần duyệt phép)</div>
           </div>
         </div>
@@ -41,7 +69,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <div className="stat-icon red">🏆</div>
           <div className="stat-info">
             <h3>Đạt Chuyên Cần Tháng</h3>
-            <div className="stat-value">5</div>
+            <div className="stat-value">{stats.monthlyBonusEligible}</div>
             <div className="stat-desc">Không nghỉ ngày nào</div>
           </div>
         </div>

@@ -1,9 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
 
-// contextBridge: Tạo cầu nối bảo mật, gắn đối tượng "electronAPI" vào "window" để React gọi được.
-// ipcRenderer: Bộ bưu tá ở phía Web dùng để:
-//   - Gửi yêu cầu (request) từ Web -> Main Process (ipcMain) và nhận kết quả trả về (response).
-//   - Lắng nghe các sự kiện chủ động được phát từ Main Process xuống Web (như click Menu).
 contextBridge.exposeInMainWorld('electronAPI', {
   ping: () => ipcRenderer.invoke('ping'),
   login: (credentials: { username: string; password: string }) =>
@@ -15,5 +11,35 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeListener('menu-navigate', subscription);
     };
   },
-});
 
+  // 1. Tải file mẫu Template.xlsx
+  downloadTemplate: () => ipcRenderer.invoke('template:download'),
+
+  // 2. Nhập file Excel & lấy lịch sử file
+  importExcel: (data: { fileBuffer: Uint8Array; originalName: string }) =>
+    ipcRenderer.invoke('excel:import', data),
+  getImportHistory: () => ipcRenderer.invoke('excel:getHistory'),
+
+  // 3. Quản lý nhân viên
+  getEmployees: () => ipcRenderer.invoke('employees:getAll'),
+  saveEmployee: (emp: any) => ipcRenderer.invoke('employees:save', emp),
+  deleteEmployee: (id: number) => ipcRenderer.invoke('employees:delete', id),
+
+  // 4. Chấm công & duyệt phép
+  getAttendances: (date?: string) => ipcRenderer.invoke('attendance:getByDate', date),
+  updateAttendanceStatus: (params: {
+    id: number;
+    late_permitted?: number;
+    leave_permitted?: number;
+    note?: string;
+  }) => ipcRenderer.invoke('attendance:updateStatus', params),
+  getLeaveRequests: () => ipcRenderer.invoke('attendance:getLeaveRequests'),
+
+  // 5. Thưởng chuyên cần & Lương tháng
+  getAttendanceBonuses: (month: string) => ipcRenderer.invoke('bonus:getByMonth', month),
+  getMonthlySalaries: (month: string) => ipcRenderer.invoke('salary:getByMonth', month),
+
+  // 6. Thống kê Dashboard
+  getDashboardStats: (params?: { date?: string; month?: string }) =>
+    ipcRenderer.invoke('dashboard:getStats', params),
+});

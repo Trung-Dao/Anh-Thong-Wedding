@@ -1,9 +1,24 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import electron from 'electron';
+const { app, BrowserWindow, ipcMain, dialog } = electron;
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'node:module';
 import { initDatabase, getDb } from './database/db';
 import { setupApplicationMenu } from './menu';
+import {
+  importExcelTimesheet,
+  getImportHistory,
+  getEmployees,
+  saveEmployee,
+  deleteEmployee,
+  getAttendances,
+  updateAttendanceStatus,
+  getLeaveRequests,
+  getAttendanceBonuses,
+  getMonthlySalaries,
+  getDashboardStats,
+} from './services/attendanceService';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -61,6 +76,7 @@ app.whenReady().then(() => {
   // Đăng ký các hàm IPC xử lý dữ liệu
   ipcMain.handle('ping', () => 'pong');
 
+  // 1. Đăng nhập
   ipcMain.handle('login', async (_event, { username, password }) => {
     try {
       const db = getDb();
@@ -74,6 +90,155 @@ app.whenReady().then(() => {
       return { success: false, message: 'Sai tên đăng nhập hoặc mật khẩu!' };
     } catch (err: any) {
       return { success: false, message: err.message };
+    }
+  });
+
+  // 2. Tải file mẫu Template.xlsx về máy tính của người dùng
+  ipcMain.handle('template:download', async () => {
+    try {
+      const possibleSrcPaths = [
+        path.join(process.cwd(), 'public', 'Template.xlsx'),
+        path.join(__dirname, '../public/Template.xlsx'),
+        path.join(__dirname, 'Template.xlsx'),
+        path.join(process.cwd(), 'dist', 'Template.xlsx'),
+        path.join(app.getAppPath(), 'public', 'Template.xlsx'),
+      ];
+
+      let foundSrc = '';
+      for (const p of possibleSrcPaths) {
+        if (fs.existsSync(p)) {
+          foundSrc = p;
+          break;
+        }
+      }
+
+      if (!foundSrc) {
+        return { success: false, message: 'Không tìm thấy file mẫu Template.xlsx trong hệ thống!' };
+      }
+
+      const { canceled, filePath } = await dialog.showSaveDialog({
+        title: 'Tải File Mẫu Excel Máy Chấm Công',
+        defaultPath: 'Template.xlsx',
+        filters: [{ name: 'Excel Files (*.xlsx)', extensions: ['xlsx'] }],
+      });
+
+      if (canceled || !filePath) {
+        return { success: false, canceled: true };
+      }
+
+      fs.copyFileSync(foundSrc, filePath);
+      return { success: true, filePath };
+    } catch (err: any) {
+      return { success: false, message: err.message };
+    }
+  });
+
+  // 3. Nhập file Excel chấm công
+  ipcMain.handle('excel:import', async (_event, { fileBuffer, originalName }) => {
+    try {
+      const buffer = Buffer.from(fileBuffer);
+      const result = await importExcelTimesheet(buffer, originalName);
+      return result;
+    } catch (err: any) {
+      return { success: false, message: err.message };
+    }
+  });
+
+  // 4. Lấy lịch sử file đã import
+  ipcMain.handle('excel:getHistory', async () => {
+    try {
+      return getImportHistory();
+    } catch (err: any) {
+      console.error('Lỗi lấy lịch sử file:', err);
+      return [];
+    }
+  });
+
+  // 5. Quản lý nhân viên
+  ipcMain.handle('employees:getAll', async () => {
+    try {
+      return getEmployees();
+    } catch (err: any) {
+      console.error('Lỗi lấy danh sách nhân viên:', err);
+      return [];
+    }
+  });
+
+  ipcMain.handle('employees:save', async (_event, emp) => {
+    try {
+      return saveEmployee(emp);
+    } catch (err: any) {
+      return { success: false, message: err.message };
+    }
+  });
+
+  ipcMain.handle('employees:delete', async (_event, id) => {
+    try {
+      return deleteEmployee(id);
+    } catch (err: any) {
+      return { success: false, message: err.message };
+    }
+  });
+
+  // 6. Chấm công
+  ipcMain.handle('attendance:getByDate', async (_event, date) => {
+    try {
+      return getAttendances(date);
+    } catch (err: any) {
+      console.error('Lỗi lấy chấm công:', err);
+      return [];
+    }
+  });
+
+  ipcMain.handle('attendance:updateStatus', async (_event, params) => {
+    try {
+      return updateAttendanceStatus(params);
+    } catch (err: any) {
+      return { success: false, message: err.message };
+    }
+  });
+
+  ipcMain.handle('attendance:getLeaveRequests', async () => {
+    try {
+      return getLeaveRequests();
+    } catch (err: any) {
+      console.error('Lỗi lấy danh sách duyệt:', err);
+      return [];
+    }
+  });
+
+  // 7. Thưởng chuyên cần & Lương tháng
+  ipcMain.handle('bonus:getByMonth', async (_event, month) => {
+    try {
+      return getAttendanceBonuses(month);
+    } catch (err: any) {
+      console.error('Lỗi tính chuyên cần:', err);
+      return [];
+    }
+  });
+
+  ipcMain.handle('salary:getByMonth', async (_event, month) => {
+    try {
+      return getMonthlySalaries(month);
+    } catch (err: any) {
+      console.error('Lỗi tính bảng lương:', err);
+      return [];
+    }
+  });
+
+  // 8. Thống kê Dashboard
+  ipcMain.handle('dashboard:getStats', async (_event, { date, month } = {}) => {
+    try {
+      return getDashboardStats(date, month);
+    } catch (err: any) {
+      console.error('Lỗi lấy thống kê dashboard:', err);
+      return {
+        totalEmployees: 0,
+        activeEmployees: 0,
+        todayAttended: 0,
+        todayLate: 0,
+        monthlyBonusEligible: 0,
+      };
     }
   });
 
