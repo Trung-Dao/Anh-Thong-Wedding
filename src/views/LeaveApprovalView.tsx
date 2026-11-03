@@ -30,9 +30,9 @@ export const LeaveApprovalView: React.FC = () => {
         await window.electronAPI.updateAttendanceStatus({
           id: record.id,
           late_permitted: permitted ? 1 : 0,
-          note: permitted
-            ? 'Trễ có phép'
-            : 'Trễ không phép (Trừ 1/2 ngày lương)',
+          // note: permitted
+          //   ? 'Trễ có phép'
+          //   : 'Trễ không phép (Trừ 1/2 ngày lương)',
         });
         loadRequests();
       } catch (err: any) {
