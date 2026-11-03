@@ -106,9 +106,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <span className="nav-item-icon">{item.icon}</span>
               <span className="nav-item-label">{item.label}</span>
-              {item.badge !== undefined && (
+              {/* {item.badge !== undefined && (
                 <span className="nav-item-badge">{item.badge}</span>
-              )}
+              )} */}
             </button>
           ))}
 
