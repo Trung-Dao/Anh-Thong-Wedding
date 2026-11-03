@@ -26,7 +26,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteEmployee: (id: number) => ipcRenderer.invoke('employees:delete', id),
 
   // 4. Chấm công & duyệt phép
-  getAttendances: (date?: string) => ipcRenderer.invoke('attendance:getByDate', date),
+  getAttendances: (filter?: string | { date?: string; month?: string }) =>
+    ipcRenderer.invoke('attendance:getByDate', filter),
   getRawAttendances: (filters?: { date?: string; employee_code?: string; file_id?: number }) =>
     ipcRenderer.invoke('attendance:getRaw', filters),
   updateAttendanceStatus: (params: {

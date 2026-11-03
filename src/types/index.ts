@@ -127,7 +127,7 @@ export interface ElectronAPI {
   saveEmployee: (emp: Partial<Employee>) => Promise<{ success: boolean; message?: string }>;
   deleteEmployee: (id: number) => Promise<{ success: boolean; message?: string }>;
 
-  getAttendances: (date?: string) => Promise<AttendanceRecord[]>;
+  getAttendances: (filter?: string | { date?: string; month?: string }) => Promise<AttendanceRecord[]>;
   getRawAttendances: (filters?: {
     date?: string;
     employee_code?: string;

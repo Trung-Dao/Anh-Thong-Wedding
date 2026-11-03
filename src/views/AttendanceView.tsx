@@ -4,10 +4,8 @@ import type { AttendanceRecord, RawAttendanceRecord, Employee } from '../types';
 export const AttendanceView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'summary' | 'raw'>('summary');
 
-  // State cho Bảng tổng hợp
-  const [selectedDate, setSelectedDate] = useState(() => {
-    return new Date().toISOString().slice(0, 10);
-  });
+  // State cho Bảng tổng hợp (mặc định rỗng = xem tất cả)
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +16,17 @@ export const AttendanceView: React.FC = () => {
   const [rawEmpFilter, setRawEmpFilter] = useState('');
   const [employees, setEmployees] = useState<Employee[]>([]);
 
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  const formatDateVN = (dateStr?: string) => {
+    if (!dateStr) return '--';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+  };
+
   // Tải danh sách nhân viên để lọc
   useEffect(() => {
     if (window.electronAPI?.getEmployees) {
@@ -27,12 +36,19 @@ export const AttendanceView: React.FC = () => {
     }
   }, []);
 
-  const loadAttendances = async (dateStr: string) => {
+  const loadAttendances = async (monthStr: string) => {
     if (window.electronAPI?.getAttendances) {
       setLoading(true);
       try {
-        const list = await window.electronAPI.getAttendances(dateStr);
-        setRecords(list || []);
+        const list = await window.electronAPI.getAttendances(monthStr);
+        // Sắp xếp giảm dần theo attendance_date, sau đó theo mã nhân viên tăng dần
+        const sorted = (list || []).slice().sort((a, b) => {
+          if (b.attendance_date !== a.attendance_date) {
+            return b.attendance_date.localeCompare(a.attendance_date);
+          }
+          return Number(a.employee_code) - Number(b.employee_code);
+        });
+        setRecords(sorted);
       } catch (err) {
         console.error('Lỗi khi lấy dữ liệu chấm công:', err);
       } finally {
@@ -60,16 +76,11 @@ export const AttendanceView: React.FC = () => {
 
   useEffect(() => {
     if (activeTab === 'summary') {
-      loadAttendances(selectedDate);
+      loadAttendances(selectedMonth);
     } else {
       loadRawAttendances();
     }
-  }, [activeTab, selectedDate, rawDateFilter, rawEmpFilter]);
-
-  const handleToday = () => {
-    const today = new Date().toISOString().slice(0, 10);
-    setSelectedDate(today);
-  };
+  }, [activeTab, selectedMonth, rawDateFilter, rawEmpFilter]);
 
   return (
     <div>
@@ -100,24 +111,39 @@ export const AttendanceView: React.FC = () => {
       {activeTab === 'summary' ? (
         /* ================= 1. TAB BẢNG TỔNG HỢP THEO THÁNG ================= */
         <div className="card">
-          <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600' }}>Chọn tháng:</label>
+          <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600' }}>Lọc Theo Tháng:</label>
               <input
-                type="date"
+                type="month"
                 className="form-input"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                style={{ width: '160px' }}
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
               />
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button className="btn btn-secondary btn-sm" onClick={handleToday}>
-                Hôm Nay
+              <button
+                className={`btn btn-sm ${!selectedMonth ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setSelectedMonth('')}
+                title="Xem tất cả các tháng"
+              >
+                Xem Tất Cả
               </button>
               <button
+                className={`btn btn-sm ${selectedMonth === currentMonth ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setSelectedMonth(currentMonth)}
+                title="Xem dữ liệu tháng hiện tại"
+              >
+                Tháng Này
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="badge badge-info" style={{ fontSize: '13px', padding: '6px 12px' }}>
+                Tổng: {records.length} bản ghi {selectedMonth ? `(Tháng ${selectedMonth})` : '(Tất cả)'}
+              </span>
+              <button
                 className="btn btn-primary btn-sm"
-                onClick={() => loadAttendances(selectedDate)}
+                onClick={() => loadAttendances(selectedMonth)}
                 disabled={loading}
               >
                 {loading ? 'Đang tải...' : '🔄 Làm Mới Dữ Liệu'}
@@ -131,10 +157,11 @@ export const AttendanceView: React.FC = () => {
                 <tr>
                   <th style={{ width: '70px' }}>Mã NV</th>
                   <th>Họ Và Tên</th>
+                  <th>Ngày</th>
                   <th>Giờ Vào</th>
                   <th>Giờ Ra</th>
                   <th>Giờ Làm Chính (7h-17h)</th>
-                  <th>Tăng Ca (OT)</th>
+                  <th>Tăng Ca</th>
                   <th>Tình Trạng Đi Trễ</th>
                   <th>Nghỉ Phép</th>
                   <th>Ghi Chú</th>
@@ -143,11 +170,19 @@ export const AttendanceView: React.FC = () => {
               <tbody>
                 {records.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                      Không có dữ liệu chấm công nào trong ngày <strong>{selectedDate}</strong>.
+                    <td colSpan={10} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                      {loading
+                        ? 'Đang tải dữ liệu...'
+                        : selectedMonth
+                        ? (
+                          <>
+                            Không có dữ liệu chấm công nào trong tháng <strong>{selectedMonth}</strong>.
+                          </>
+                        )
+                        : 'Không có dữ liệu chấm công nào trong hệ thống.'}
                       <br />
                       <span style={{ fontSize: '12px' }}>
-                        Vui lòng chọn ngày khác hoặc vào mục <strong>"Nhập công từ excel"</strong> để nạp dữ liệu từ máy chấm công.
+                        Vui lòng chọn tháng khác hoặc vào mục <strong>"Nhập công từ excel"</strong> để nạp dữ liệu từ máy chấm công.
                       </span>
                     </td>
                   </tr>
@@ -159,6 +194,9 @@ export const AttendanceView: React.FC = () => {
                       </td>
                       <td style={{ fontWeight: '600' }}>
                         {r.employee_name || `Nhân viên ${r.employee_code}`}
+                      </td>
+                      <td>
+                        <strong style={{ color: '#0f172a' }}>{formatDateVN(r.attendance_date)}</strong>
                       </td>
                       <td>{r.check_in || '--:--'}</td>
                       <td>{r.check_out || '--:--'}</td>

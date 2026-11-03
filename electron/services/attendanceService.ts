@@ -476,20 +476,48 @@ export function deleteEmployee(id: number) {
 }
 
 /**
- * Lấy dữ liệu chấm công theo ngày
+ * Lấy dữ liệu chấm công (theo ngày, tháng hoặc tất cả)
  */
-export function getAttendances(date?: string) {
+export function getAttendances(filter?: string | { date?: string; month?: string }) {
   const db = getDb();
-  const queryDate = date || new Date().toISOString().slice(0, 10);
-  return db
-    .prepare(`
-      SELECT a.*, e.name as employee_name, e.employee_type
-      FROM attendances a
-      LEFT JOIN employees e ON a.employee_code = e.code
-      WHERE a.attendance_date = ?
-      ORDER BY CAST(a.employee_code AS INTEGER) ASC, a.employee_code ASC
-    `)
-    .all(queryDate);
+  let sql = `
+    SELECT a.*, e.name as employee_name, e.employee_type
+    FROM attendances a
+    LEFT JOIN employees e ON a.employee_code = e.code
+    WHERE 1=1
+  `;
+  const params: any[] = [];
+
+  let dateParam: string | undefined;
+  let monthParam: string | undefined;
+
+  if (typeof filter === 'string') {
+    const trimmed = filter.trim();
+    if (trimmed && trimmed !== 'all') {
+      if (trimmed.length === 7) {
+        // YYYY-MM
+        monthParam = trimmed;
+      } else {
+        // YYYY-MM-DD
+        dateParam = trimmed;
+      }
+    }
+  } else if (filter && typeof filter === 'object') {
+    dateParam = filter.date;
+    monthParam = filter.month;
+  }
+
+  if (dateParam) {
+    sql += ` AND a.attendance_date = ?`;
+    params.push(dateParam);
+  } else if (monthParam) {
+    sql += ` AND strftime('%Y-%m', a.attendance_date) = ?`;
+    params.push(monthParam);
+  }
+
+  sql += ` ORDER BY a.attendance_date DESC, CAST(a.employee_code AS INTEGER) ASC, a.employee_code ASC`;
+
+  return db.prepare(sql).all(...params);
 }
 
 /**
