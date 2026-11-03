@@ -270,10 +270,10 @@ export const AttendanceView: React.FC = () => {
                   <th style={{ width: '50px' }}>STT</th>
                   <th style={{ width: '70px' }}>Mã NV</th>
                   <th>Tên Nhân Viên</th>
-                  <th>Ngày (Quy đổi)</th>
-                  <th>Ngày Gốc Excel</th>
-                  <th>Giờ (Quy đổi)</th>
-                  <th>Giờ Gốc Excel</th>
+                  <th>Ngày</th>
+                  {/* <th>Ngày Gốc Excel</th> */}
+                  <th>Giờ</th>
+                  {/* <th>Giờ Gốc Excel</th> */}
                   <th>Kiểu Chấm</th>
                   <th>Nguồn</th>
                   <th>Mã Số Máy</th>
@@ -300,13 +300,13 @@ export const AttendanceView: React.FC = () => {
                       <td>
                         <strong>{r.date_formatted}</strong>
                       </td>
-                      <td style={{ color: '#64748b', fontSize: '12px' }}>{r.date_raw || '--'}</td>
+                      {/* <td style={{ color: '#64748b', fontSize: '12px' }}>{r.date_raw || '--'}</td> */}
                       <td>
                         <span className="badge badge-neutral" style={{ fontWeight: '600' }}>
                           {r.time_formatted}
                         </span>
                       </td>
-                      <td style={{ color: '#64748b', fontSize: '12px' }}>{r.time_raw || '--'}</td>
+                      {/* <td style={{ color: '#64748b', fontSize: '12px' }}>{r.time_raw || '--'}</td> */}
                       <td>{r.punch_type ?? '--'}</td>
                       <td>{r.punch_source ?? '--'}</td>
                       <td>{r.machine_number ?? '--'}</td>
