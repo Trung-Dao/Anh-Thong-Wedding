@@ -162,8 +162,7 @@ export const AttendanceView: React.FC = () => {
                   <th>Giờ Ra</th>
                   <th>Giờ Làm Chính (7h-17h)</th>
                   <th>Tăng Ca</th>
-                  <th>Tình Trạng Đi Trễ</th>
-                  <th>Nghỉ Phép</th>
+                  <th>Tình Trạng</th>
                   <th>Ghi Chú</th>
                 </tr>
               </thead>
@@ -215,13 +214,13 @@ export const AttendanceView: React.FC = () => {
                           r.late_permitted === 1 ? (
                             <span className="badge badge-warning">Trễ có phép</span>
                           ) : (
-                            <span className="badge badge-danger">Trễ không phép (Trừ 1/2 ngày)</span>
+                            <span className="badge badge-danger">Trễ không phép</span>
                           )
                         ) : (
                           <span className="badge badge-neutral">Đúng giờ</span>
                         )}
                       </td>
-                      <td>
+                      {/* <td>
                         {r.is_leave === 1 ? (
                           r.leave_permitted === 1 ? (
                             <span className="badge badge-info">Nghỉ có phép</span>
@@ -231,7 +230,7 @@ export const AttendanceView: React.FC = () => {
                         ) : (
                           <span className="badge badge-success">Có đi làm</span>
                         )}
-                      </td>
+                      </td> */}
                       <td style={{ fontSize: '12px', color: '#64748b' }}>{r.note || '--'}</td>
                     </tr>
                   ))
