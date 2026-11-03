@@ -30,11 +30,11 @@ Dữ liệu thời gian trong excel là số serial ngày, giờ.
 6. Tổng hợp lương theo tháng: Xem tổng công, tổng giờ chính, tổng tăng ca, phạt trễ, chuyên cần, thực lĩnh. Không cần xuất dữ liệu excel.
 
 - QUY ĐỊNH CHẤM CÔNG VÀ TÍNH LƯƠNG:
-  Giờ làm chính: 7:00 đến 17:00 (Khách không trừ giờ nghỉ trưa vẫn tính giờ cho nhân viên luôn).
-  Cho phép vào trễ 15 phút: 7:15 đến 17:00 không tính là đi trễ. Trong phạm vi giờ làm chính nếu đủ 9 giờ 45 phút thì làm tròn 10 giờ (chỉ làm tròn đối với trường hợp này).
-  Nếu 7:16 vào thì coi như là trường hợp đi trễ. 
-  Cho phép về sớm trước 17:00, nếu quên check giờ ra thì sẽ tính giờ ra là 17:00. Ví dụ nếu làm từ 7:00 đến 15:00 = 8 tiếng, không cần ghi nhận xin phép về sớm
-  Giờ tăng ca được tính ngoài giờ làm chính (7:00 đến 17:00): trước 7:00 sáng và sau 17:00 tối. Lương tăng ca lấy giờ (bỏ phút lẻ).
+  + Giờ làm chính: 7:00 đến 17:00 (Khách không trừ giờ nghỉ trưa vẫn tính giờ cho nhân viên luôn).
+  + Cho phép về sớm trước 17:00, nếu quên check giờ ra thì sẽ tính giờ ra là 17:00. Nếu làm từ 7:00 đến 15:00 = 8 tiếng, không cần ghi nhận xin phép về sớm
+  + Cho phép vào trễ 15 phút: 7:15 đến 17:00 không tính là đi trễ. Nếu 7:16 vào thì coi như là trường hợp đi trễ.
+  + Trong phạm vi giờ làm chính nếu đủ 9 giờ 45 phút thì làm tròn 10 giờ (chỉ làm tròn đối với trường hợp này). 
+  + Giờ tăng ca được tính ngoài giờ làm chính (7:00 đến 17:00): trước 7:00 sáng và sau 17:00 tối. Lấy giờ (bỏ phút lẻ).
   -------------------
   Trường hợp đi trễ KHÔNG XIN PHÉP thì bị trừ 1/2 ngày lương, lương ngoài giờ tính riêng không gom vào.
   Có xin phép thì làm bao nhiêu giờ tính bấy nhiêu
