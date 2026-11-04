@@ -33,7 +33,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   return (
     <div>
       {/* 4 Card thống kê chính từ CSDL thực tế */}
-      <div className="stats-grid">
+      {/* <div className="stats-grid">
         <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => onNavigate('employees')}>
           <div className="stat-icon blue">👥</div>
           <div className="stat-info">
@@ -73,7 +73,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             <div className="stat-desc">Không nghỉ ngày nào</div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Lối tắt truy cập nhanh & Quy định công ty */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
