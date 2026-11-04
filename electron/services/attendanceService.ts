@@ -749,10 +749,10 @@ export function getMonthlySalaries(month: string) {
     let totalWorkDays = 0;
     let totalRegularHours = 0;
     let totalOtHours = 0;
-    let latePenalty = 0;
-    let lateCount = 0;
-    let unexcusedLateCount = 0;
-    let excusedLateCount = 0;
+    let latePenalty = 0; //Lương phạt đi trễ trừ 1/2
+    let lateCount = 0; //Đi trễ
+    let unexcusedLateCount = 0; //Đi trễ không phép
+    let excusedLateCount = 0; //Đi trễ có phép
 
     for (const att of attendances) {
       if (att.regular_hours > 0 || att.check_in) {
@@ -776,8 +776,8 @@ export function getMonthlySalaries(month: string) {
       }
     }
 
-    const hourlySalary = emp.hourly_salary || (emp.employee_type === 'probation' ? 16666 : 20000);
-    const otHourlySalary = emp.ot_hourly_salary || 40000;
+    const hourlySalary = emp.hourly_salary || 0;
+    const otHourlySalary = emp.ot_hourly_salary || 0;
     const regularSalary = totalRegularHours * hourlySalary;
     const otSalary = totalOtHours * otHourlySalary;
 
