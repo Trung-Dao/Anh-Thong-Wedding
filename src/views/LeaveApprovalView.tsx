@@ -1,15 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import type { AttendanceRecord } from '../types';
+import type { AttendanceRecord, Employee } from '../types';
 
 export const LeaveApprovalView: React.FC = () => {
   const [items, setItems] = useState<AttendanceRecord[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedEmpCode, setSelectedEmpCode] = useState<string>('all');
   const [loading, setLoading] = useState(false);
 
+  // Tải danh sách nhân viên cho dropdown
+  useEffect(() => {
+    if (window.electronAPI?.getEmployees) {
+      window.electronAPI.getEmployees().then((res) => {
+        setEmployees(res || []);
+      });
+    }
+  }, []);
+
+  // Tải danh sách duyệt đi trễ theo tháng và nhân viên
   const loadRequests = async () => {
     if (window.electronAPI?.getLeaveRequests) {
       setLoading(true);
       try {
-        const list = await window.electronAPI.getLeaveRequests();
+        const list = await window.electronAPI.getLeaveRequests({
+          month: selectedMonth || undefined,
+          employee_code: selectedEmpCode !== 'all' ? selectedEmpCode : undefined,
+        });
         setItems(list || []);
       } catch (err) {
         console.error('Lỗi tải danh sách duyệt đi trễ:', err);
@@ -21,7 +37,7 @@ export const LeaveApprovalView: React.FC = () => {
 
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [selectedMonth, selectedEmpCode]);
 
   const handleApprove = async (record: AttendanceRecord, permitted: boolean) => {
     if (!record.id) return;
@@ -30,9 +46,6 @@ export const LeaveApprovalView: React.FC = () => {
         await window.electronAPI.updateAttendanceStatus({
           id: record.id,
           late_permitted: permitted ? 1 : 0,
-          // note: permitted
-          //   ? 'Trễ có phép'
-          //   : 'Trễ không phép (Trừ 1/2 ngày lương)',
         });
         loadRequests();
       } catch (err: any) {
@@ -44,8 +57,48 @@ export const LeaveApprovalView: React.FC = () => {
   return (
     <div className="card">
       <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span className="card-title">📝 Danh Sách Duyệt Đi Trễ Giờ</span>
+
+          {/* Bộ lọc theo Tháng/Năm */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600' }}>Tháng:</label>
+            <input
+              type="month"
+              className="form-input"
+              style={{ width: '150px', padding: '5px 10px' }}
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            />
+            {selectedMonth && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setSelectedMonth('')}
+                style={{ fontSize: '11px', padding: '3px 8px' }}
+              >
+                Tất cả
+              </button>
+            )}
+          </div>
+
+          {/* Bộ lọc theo Nhân viên */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label style={{ fontSize: '13px', fontWeight: '600' }}>Nhân viên:</label>
+            <select
+              className="form-input"
+              style={{ width: '180px', padding: '5px 10px' }}
+              value={selectedEmpCode}
+              onChange={(e) => setSelectedEmpCode(e.target.value)}
+            >
+              <option value="all">Tất cả nhân viên</option>
+              {employees.map((emp) => (
+                <option key={emp.code} value={emp.code}>
+                  #{emp.code} - {emp.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <button className="btn btn-secondary btn-sm" onClick={loadRequests} disabled={loading}>
@@ -61,7 +114,6 @@ export const LeaveApprovalView: React.FC = () => {
               <th>Họ Và Tên</th>
               <th>Ngày Chấm Công</th>
               <th>Giờ Vào - Ra</th>
-              {/* <th>Tình Trạng</th> */}
               <th>Tình Trạng</th>
               <th>Ghi Chú</th>
               <th style={{ textAlign: 'center', width: '220px' }}>Hành Động</th>
@@ -70,8 +122,8 @@ export const LeaveApprovalView: React.FC = () => {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                  Hiện tại không có trường hợp đi trễ nào cần xử lý.
+                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  Hiện tại không có trường hợp đi trễ nào phù hợp với bộ lọc.
                 </td>
               </tr>
             ) : (
@@ -90,9 +142,6 @@ export const LeaveApprovalView: React.FC = () => {
                     <td>
                       {item.check_in || '--:--'} → {item.check_out || '--:--'}
                     </td>
-                    {/* <td>
-                      <span className="badge badge-warning">Đi trễ (sau 7:15)</span>
-                    </td> */}
                     <td>
                       {isPermitted ? (
                         <span className="badge badge-warning">Trễ có phép</span>
