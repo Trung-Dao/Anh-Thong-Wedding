@@ -245,9 +245,9 @@ export const ImportExcelView: React.FC = () => {
       <div className="card" style={{ marginTop: '20px' }}>
         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span className="card-title">📋 Lịch Sử Các File Excel Đã Nhập</span>
-          <button className="btn btn-secondary btn-sm" onClick={loadHistory} disabled={loadingHistory}>
+          {/* <button className="btn btn-secondary btn-sm" onClick={loadHistory} disabled={loadingHistory}>
             {loadingHistory ? 'Đang tải...' : '🔄 Làm Mới'}
-          </button>
+          </button> */}
         </div>
         <div className="table-responsive">
           <table className="data-table">

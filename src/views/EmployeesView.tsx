@@ -113,9 +113,9 @@ export const EmployeesView: React.FC = () => {
             <option value="probation">NV Học việc</option>
           </select>
 
-          <button className="btn btn-secondary btn-sm" onClick={loadEmployees} disabled={loading}>
+          {/* <button className="btn btn-secondary btn-sm" onClick={loadEmployees} disabled={loading}>
             {loading ? 'Đang tải...' : '🔄 Làm Mới'}
-          </button>
+          </button> */}
         </div>
 
         <button className="btn btn-primary" onClick={handleOpenAdd}>

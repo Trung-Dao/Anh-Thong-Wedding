@@ -141,13 +141,13 @@ export const AttendanceView: React.FC = () => {
               <span className="badge badge-info" style={{ fontSize: '13px', padding: '6px 12px' }}>
                 Tổng: {records.length} bản ghi {selectedMonth ? `(Tháng ${selectedMonth})` : '(Tất cả)'}
               </span>
-              <button
+              {/* <button
                 className="btn btn-primary btn-sm"
                 onClick={() => loadAttendances(selectedMonth)}
                 disabled={loading}
               >
                 {loading ? 'Đang tải...' : '🔄 Làm Mới Dữ Liệu'}
-              </button>
+              </button> */}
             </div>
           </div>
 

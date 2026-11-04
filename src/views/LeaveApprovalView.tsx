@@ -101,9 +101,9 @@ export const LeaveApprovalView: React.FC = () => {
           </div>
         </div>
 
-        <button className="btn btn-secondary btn-sm" onClick={loadRequests} disabled={loading}>
+        {/* <button className="btn btn-secondary btn-sm" onClick={loadRequests} disabled={loading}>
           {loading ? 'Đang tải...' : '🔄 Làm Mới'}
-        </button>
+        </button> */}
       </div>
 
       <div className="table-responsive">

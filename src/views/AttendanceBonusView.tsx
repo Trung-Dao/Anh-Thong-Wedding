@@ -30,7 +30,7 @@ export const AttendanceBonusView: React.FC = () => {
     <div className="card">
       <div className="card-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontSize: '13px', fontWeight: '600' }}>Chọn Tháng:</label>
+          <label style={{ fontSize: '13px', fontWeight: '600', width: '112px' }}>Chọn Tháng:</label>
           <input
             type="month"
             className="form-input"
@@ -39,13 +39,13 @@ export const AttendanceBonusView: React.FC = () => {
           />
         </div>
 
-        <button
+        {/* <button
           className="btn btn-primary btn-sm"
           onClick={() => loadBonuses(selectedMonth)}
           disabled={loading}
         >
           {loading ? 'Đang tính toán...' : '🔄 Tính Lại Chuyên Cần'}
-        </button>
+        </button> */}
       </div>
 
       <div className="table-responsive">

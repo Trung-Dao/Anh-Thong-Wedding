@@ -280,14 +280,14 @@ export const SalaryView: React.FC = () => {
             </select>
 
             {/* Nút tính lại */}
-            <button
+            {/* <button
               className="btn btn-secondary btn-sm"
               onClick={() => loadSalaries(selectedMonth)}
               disabled={loading}
               title="Tính toán và cập nhật lại bảng lương từ dữ liệu chấm công"
             >
               {loading ? '⏳ Đang tính...' : '🔄 Tính Lại'}
-            </button>
+            </button> */}
 
             {/* Nút In bảng lương */}
             {/* <button
