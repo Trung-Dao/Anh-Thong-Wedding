@@ -478,7 +478,7 @@ export function deleteEmployee(id: number) {
 /**
  * Lấy dữ liệu chấm công (theo ngày, tháng hoặc tất cả)
  */
-export function getAttendances(filter?: string | { date?: string; month?: string }) {
+export function getAttendances(filter?: string | { date?: string; month?: string; employee_code?: string }) {
   const db = getDb();
   let sql = `
     SELECT a.*, e.name as employee_name, e.employee_type
@@ -490,6 +490,7 @@ export function getAttendances(filter?: string | { date?: string; month?: string
 
   let dateParam: string | undefined;
   let monthParam: string | undefined;
+  let empCodeParam: string | undefined;
 
   if (typeof filter === 'string') {
     const trimmed = filter.trim();
@@ -505,6 +506,7 @@ export function getAttendances(filter?: string | { date?: string; month?: string
   } else if (filter && typeof filter === 'object') {
     dateParam = filter.date;
     monthParam = filter.month;
+    empCodeParam = filter.employee_code;
   }
 
   if (dateParam) {
@@ -513,6 +515,10 @@ export function getAttendances(filter?: string | { date?: string; month?: string
   } else if (monthParam) {
     sql += ` AND strftime('%Y-%m', a.attendance_date) = ?`;
     params.push(monthParam);
+  }
+  if (empCodeParam) {
+    sql += ` AND a.employee_code = ?`;
+    params.push(empCodeParam);
   }
 
   sql += ` ORDER BY a.attendance_date DESC, CAST(a.employee_code AS INTEGER) ASC, a.employee_code ASC`;
@@ -684,6 +690,17 @@ export function getAttendanceBonuses(month: string) {
 }
 
 /**
+ * Lấy danh sách các tháng có dữ liệu chấm công
+ */
+export function getSalaryMonths(): string[] {
+  const db = getDb();
+  const rows: any[] = db
+    .prepare("SELECT DISTINCT strftime('%Y-%m', attendance_date) as m FROM attendances WHERE attendance_date IS NOT NULL ORDER BY m DESC")
+    .all();
+  return rows.map((r) => r.m).filter(Boolean);
+}
+
+/**
  * Tổng hợp lương theo tháng (YYYY-MM)
  */
 export function getMonthlySalaries(month: string) {
@@ -694,7 +711,29 @@ export function getMonthlySalaries(month: string) {
 
   // Đảm bảo tính toán chuyên cần trước
   const bonuses = getAttendanceBonuses(month);
-  const bonusMap = new Map(bonuses.map((b) => [b.employee_code, b.bonus_amount]));
+  const bonusMap = new Map(bonuses.map((b) => [b.employee_code, b]));
+
+  const [yearStr, monthStr] = month.split('-');
+  const year = parseInt(yearStr, 10);
+  const m = parseInt(monthStr, 10);
+  const daysInMonth = new Date(year, m, 0).getDate();
+
+  const insertSalaryStmt = db.prepare(`
+    INSERT INTO monthly_salaries (
+      employee_code, month_year, total_work_days, total_regular_hours, total_ot_hours,
+      regular_salary, ot_salary, late_penalty, attendance_bonus, net_salary, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
+    ON CONFLICT(employee_code, month_year) DO UPDATE SET
+      total_work_days = excluded.total_work_days,
+      total_regular_hours = excluded.total_regular_hours,
+      total_ot_hours = excluded.total_ot_hours,
+      regular_salary = excluded.regular_salary,
+      ot_salary = excluded.ot_salary,
+      late_penalty = excluded.late_penalty,
+      attendance_bonus = excluded.attendance_bonus,
+      net_salary = excluded.net_salary,
+      updated_at = datetime('now', 'localtime')
+  `);
 
   const result: any[] = [];
 
@@ -703,6 +742,7 @@ export function getMonthlySalaries(month: string) {
       .prepare(`
         SELECT * FROM attendances
         WHERE employee_code = ? AND strftime('%Y-%m', attendance_date) = ?
+        ORDER BY attendance_date ASC
       `)
       .all(emp.code, month);
 
@@ -710,6 +750,9 @@ export function getMonthlySalaries(month: string) {
     let totalRegularHours = 0;
     let totalOtHours = 0;
     let latePenalty = 0;
+    let lateCount = 0;
+    let unexcusedLateCount = 0;
+    let excusedLateCount = 0;
 
     for (const att of attendances) {
       if (att.regular_hours > 0 || att.check_in) {
@@ -718,31 +761,73 @@ export function getMonthlySalaries(month: string) {
       totalRegularHours += att.regular_hours || 0;
       totalOtHours += att.ot_hours || 0;
 
-      // Quy định: Đi trễ không phép bị trừ 1/2 ngày lương chính
-      // 1 ngày = 10 giờ * hourly_salary. Trừ 1/2 ngày = 5 giờ * hourly_salary.
-      if (att.is_late === 1 && att.late_permitted !== 1) {
-        const halfDayRate = (emp.hourly_salary * 10) / 2;
-        latePenalty += halfDayRate;
+      if (att.is_late === 1) {
+        lateCount++;
+        if (att.late_permitted === 1) {
+          excusedLateCount++;
+        } else {
+          unexcusedLateCount++;
+          // Quy định: Đi trễ không phép bị trừ 1/2 ngày lương chính
+          // Lương chính thức: 200.000đ/ngày -> 100.000đ
+          // Lương học việc: 166.660đ/ngày -> 83.330đ
+          const halfDayRate = Math.round(((emp.hourly_salary || 20000) * 10) / 2);
+          latePenalty += halfDayRate;
+        }
       }
     }
 
-    const regularSalary = totalRegularHours * (emp.hourly_salary || 20000);
-    const otSalary = totalOtHours * (emp.ot_hourly_salary || 40000);
-    const attendanceBonus = bonusMap.get(emp.code) || 0;
-    const netSalary = Math.round(regularSalary + otSalary + attendanceBonus - latePenalty);
+    const hourlySalary = emp.hourly_salary || (emp.employee_type === 'probation' ? 16666 : 20000);
+    const otHourlySalary = emp.ot_hourly_salary || 40000;
+    const regularSalary = totalRegularHours * hourlySalary;
+    const otSalary = totalOtHours * otHourlySalary;
+
+    const bonusInfo = bonusMap.get(emp.code);
+    const attendanceBonus = bonusInfo?.bonus_amount || 0;
+    const attendanceStatus = bonusInfo?.status || 'not_eligible';
+    const attendanceReason = bonusInfo?.reason || '';
+    const consecutiveMonths = bonusInfo?.consecutive_months || 0;
+
+    const netSalary = Math.max(0, Math.round(regularSalary + otSalary + attendanceBonus - latePenalty));
+
+    // Cập nhật vào bảng monthly_salaries trong database SQLite
+    insertSalaryStmt.run(
+      emp.code,
+      month,
+      totalWorkDays,
+      totalRegularHours,
+      totalOtHours,
+      regularSalary,
+      otSalary,
+      latePenalty,
+      attendanceBonus,
+      netSalary
+    );
 
     result.push({
       id: emp.id,
       employee_code: emp.code,
-      employee_name: `${emp.name} (${emp.employee_type === 'probation' ? 'Học việc' : 'Chính thức'})`,
+      employee_name: emp.name,
+      employee_type: emp.employee_type || 'official',
+      status: emp.status || 'active',
+      start_date: emp.start_date,
+      hourly_salary: hourlySalary,
+      ot_hourly_salary: otHourlySalary,
       month_year: month,
+      total_month_days: daysInMonth,
       total_work_days: totalWorkDays,
+      leave_days: Math.max(0, daysInMonth - totalWorkDays),
       total_regular_hours: totalRegularHours,
       total_ot_hours: totalOtHours,
+      late_count: lateCount,
+      unexcused_late_count: unexcusedLateCount,
+      excused_late_count: excusedLateCount,
       regular_salary: regularSalary,
       ot_salary: otSalary,
       late_penalty: latePenalty,
       attendance_bonus: attendanceBonus,
+      attendance_status: attendanceStatus,
+      attendance_reason: attendanceReason,
+      consecutive_months: consecutiveMonths,
       net_salary: netSalary,
     });
   }

@@ -508,3 +508,89 @@
   font-size: 12px;
   margin-bottom: 16px;
 }
+
+/* ================= PRINT STYLES ================= */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt;
+  }
+
+  .sidebar,
+  .app-header,
+  .no-print,
+  .btn,
+  .card-header,
+  .stats-grid {
+    display: none !important;
+  }
+
+  .app-layout {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  .main-wrapper,
+  .content-body {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .data-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 10pt !important;
+  }
+
+  .data-table th,
+  .data-table td {
+    border: 1px solid #000000 !important;
+    padding: 6px 8px !important;
+    color: #000000 !important;
+    background: transparent !important;
+  }
+
+  .data-table th {
+    background-color: #f1f5f9 !important;
+    font-weight: 700 !important;
+  }
+
+  .print-signature-section {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-top: 40px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-signature-box {
+    text-align: center;
+    width: 30%;
+  }
+
+  .print-signature-box .sign-space {
+    height: 70px;
+  }
+}
+
+.print-only {
+  display: none;
+}

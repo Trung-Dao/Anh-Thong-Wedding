@@ -50,14 +50,27 @@ export interface MonthlySalary {
   id?: number;
   employee_code: string;
   employee_name?: string;
+  employee_type?: EmployeeType;
+  status?: EmployeeStatus;
+  start_date?: string;
+  hourly_salary?: number;
+  ot_hourly_salary?: number;
   month_year: string;
+  total_month_days?: number;
   total_work_days: number;
+  leave_days?: number;
   total_regular_hours: number;
   total_ot_hours: number;
+  late_count?: number;
+  unexcused_late_count?: number;
+  excused_late_count?: number;
   regular_salary: number;
   ot_salary: number;
   late_penalty: number;
   attendance_bonus: number;
+  attendance_status?: 'eligible' | 'not_eligible';
+  attendance_reason?: string;
+  consecutive_months?: number;
   net_salary: number;
 }
 
@@ -125,7 +138,7 @@ export interface ElectronAPI {
   saveEmployee: (emp: Partial<Employee>) => Promise<{ success: boolean; message?: string }>;
   deleteEmployee: (id: number) => Promise<{ success: boolean; message?: string }>;
 
-  getAttendances: (filter?: string | { date?: string; month?: string }) => Promise<AttendanceRecord[]>;
+  getAttendances: (filter?: string | { date?: string; month?: string; employee_code?: string }) => Promise<AttendanceRecord[]>;
   getRawAttendances: (filters?: {
     date?: string;
     employee_code?: string;
@@ -140,6 +153,7 @@ export interface ElectronAPI {
 
   getAttendanceBonuses: (month: string) => Promise<AttendanceBonusRow[]>;
   getMonthlySalaries: (month: string) => Promise<MonthlySalary[]>;
+  getSalaryMonths: () => Promise<string[]>;
   getDashboardStats: (params?: { date?: string; month?: string }) => Promise<DashboardStats>;
 }
 

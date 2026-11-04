@@ -40,6 +40,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 5. Thưởng chuyên cần & Lương tháng
   getAttendanceBonuses: (month: string) => ipcRenderer.invoke('bonus:getByMonth', month),
   getMonthlySalaries: (month: string) => ipcRenderer.invoke('salary:getByMonth', month),
+  getSalaryMonths: () => ipcRenderer.invoke('salary:getMonths'),
 
   // 6. Thống kê Dashboard
   getDashboardStats: (params?: { date?: string; month?: string }) =>

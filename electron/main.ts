@@ -18,6 +18,7 @@ import {
   getLeaveRequests,
   getAttendanceBonuses,
   getMonthlySalaries,
+  getSalaryMonths,
   getDashboardStats,
 } from './services/attendanceService';
 
@@ -233,6 +234,15 @@ app.whenReady().then(() => {
       return getMonthlySalaries(month);
     } catch (err: any) {
       console.error('Lỗi tính bảng lương:', err);
+      return [];
+    }
+  });
+
+  ipcMain.handle('salary:getMonths', async () => {
+    try {
+      return getSalaryMonths();
+    } catch (err: any) {
+      console.error('Lỗi lấy danh sách tháng:', err);
       return [];
     }
   });
