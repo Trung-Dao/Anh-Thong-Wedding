@@ -314,13 +314,13 @@ export const SalaryView: React.FC = () => {
                 <th style={{ textAlign: 'right' }}>Giờ Chính</th>
                 <th style={{ textAlign: 'right' }}>Lương Chính</th>
                 <th style={{ textAlign: 'right' }}>Tăng Ca</th>
-                <th style={{ textAlign: 'right' }}>Lương Tăng Ca</th>
-                <th style={{ textAlign: 'right' }}>Phạt Trễ (K.Phép)</th>
+                <th style={{ textAlign: 'right' }}>Lương TC</th>
+                <th style={{ textAlign: 'right' }}>Phạt Trễ</th>
                 <th style={{ textAlign: 'right' }}>Thưởng</th>
-                <th style={{ textAlign: 'right', backgroundColor: '#fdf2f8', color: 'var(--primary)', fontWeight: '700' }}>
+                <th style={{ textAlign: 'right', backgroundColor: '#fdf2f8', color: 'var(--primary)' }}>
                   Thực Lĩnh
                 </th>
-                <th className="no-print" style={{ width: '100px', textAlign: 'center' }}>
+                <th className="no-print" style={{ width: '120px', textAlign: 'center' }}>
                   Thao Tác
                 </th>
               </tr>
