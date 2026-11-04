@@ -225,7 +225,7 @@ export const SalaryView: React.FC = () => {
             />
 
             {/* Quick-pill các tháng có dữ liệu */}
-            {availableMonths.length > 0 && (
+            {/* {availableMonths.length > 0 && (
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', color: '#64748b' }}>Tháng có dữ liệu:</span>
                 {availableMonths.slice(0, 4).map((m) => {
@@ -253,7 +253,7 @@ export const SalaryView: React.FC = () => {
                   );
                 })}
               </div>
-            )}
+            )} */}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: 'auto', flexWrap: 'wrap' }}>
