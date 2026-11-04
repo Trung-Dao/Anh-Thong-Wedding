@@ -58,7 +58,7 @@ export function setupApplicationMenu(win: BrowserWindow) {
           click: (_item, focusedWin) => sendNavigate('attendance', focusedWin),
         },
         {
-          label: '📝 Duyệt Phép & Đi Trễ',
+          label: '📝 Duyệt Phép Đi Trễ',
           accelerator: 'CmdOrCtrl+5',
           click: (_item, focusedWin) => sendNavigate('leaves', focusedWin),
         },

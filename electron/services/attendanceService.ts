@@ -583,7 +583,7 @@ export function updateAttendanceStatus(params: {
 }
 
 /**
- * Danh sách yêu cầu cần duyệt phép & trễ
+ * Danh sách yêu cầu cần duyệt phép đi trễ
  */
 export function getLeaveRequests() {
   const db = getDb();

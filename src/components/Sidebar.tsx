@@ -46,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'leaves' as TabId,
-      label: 'Duyệt phép & Đi trễ',
+      label: 'Duyệt phép đi trễ',
       icon: '📝',
       section: 'attendance',
       badge: pendingLeavesCount > 0 ? pendingLeavesCount : undefined,

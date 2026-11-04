@@ -23,7 +23,7 @@ const tabTitles: Record<TabId, { title: string; subtitle: string }> = {
     subtitle: 'Theo dõi chi tiết giờ vào, ra, giờ chính, tăng ca và trạng thái',
   },
   leaves: {
-    title: 'Duyệt Phép & Giải Trình Đi Trễ',
+    title: 'Duyệt Phép Đi Trễ',
     subtitle: 'Xử lý các trường hợp xin nghỉ và giải trình vào trễ',
   },
   bonuses: {
