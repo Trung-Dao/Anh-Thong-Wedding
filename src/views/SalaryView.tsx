@@ -306,17 +306,17 @@ export const SalaryView: React.FC = () => {
           <table className="data-table">
             <thead>
               <tr>
-                <th style={{ width: '45px', textAlign: 'center' }}>STT</th>
-                <th style={{ width: '75px' }}>Mã NV</th>
+                {/* <th style={{ width: '45px', textAlign: 'center' }}>STT</th> */}
+                {/* <th style={{ width: '75px' }}>Mã NV</th> */}
                 <th>Tên Nhân Viên</th>
-                <th style={{ width: '110px' }}>Loại & Mức Lương</th>
+                <th style={{ width: '110px' }}>Mức Lương</th>
                 <th style={{ textAlign: 'center' }}>Tổng Công</th>
                 <th style={{ textAlign: 'right' }}>Giờ Chính</th>
-                <th style={{ textAlign: 'right' }}>Lương Giờ Chính</th>
-                <th style={{ textAlign: 'right' }}>Tăng Ca (OT)</th>
+                <th style={{ textAlign: 'right' }}>Lương Chính</th>
+                <th style={{ textAlign: 'right' }}>Tăng Ca</th>
                 <th style={{ textAlign: 'right' }}>Lương Tăng Ca</th>
                 <th style={{ textAlign: 'right' }}>Phạt Trễ (K.Phép)</th>
-                <th style={{ textAlign: 'right' }}>Chuyên Cần</th>
+                <th style={{ textAlign: 'right' }}>Thưởng</th>
                 <th style={{ textAlign: 'right', backgroundColor: '#fdf2f8', color: 'var(--primary)', fontWeight: '700' }}>
                   Thực Lĩnh
                 </th>
@@ -355,10 +355,10 @@ export const SalaryView: React.FC = () => {
                       onClick={() => setSelectedEmployee(s)}
                       title="Bấm để xem chi tiết phiếu lương và nhật ký công từng ngày"
                     >
-                      <td style={{ textAlign: 'center', color: '#64748b' }}>{index + 1}</td>
-                      <td>
+                      {/* <td style={{ textAlign: 'center', color: '#64748b' }}>{index + 1}</td> */}
+                      {/* <td>
                         <strong style={{ color: 'var(--primary)' }}>#{s.employee_code}</strong>
-                      </td>
+                      </td> */}
                       <td>
                         <div style={{ fontWeight: '600', color: '#0f172a' }}>{s.employee_name}</div>
                         <div style={{ fontSize: '11px', color: '#64748b' }}>
