@@ -35,7 +35,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     late_permitted?: number;
     note?: string;
   }) => ipcRenderer.invoke('attendance:updateStatus', params),
-  getLeaveRequests: () => ipcRenderer.invoke('attendance:getLeaveRequests'),
+  getLeaveRequests: (filter?: { month?: string; employee_code?: string; status?: string }) =>
+    ipcRenderer.invoke('attendance:getLeaveRequests', filter),
 
   // 5. Thưởng chuyên cần & Lương tháng
   getAttendanceBonuses: (month: string) => ipcRenderer.invoke('bonus:getByMonth', month),

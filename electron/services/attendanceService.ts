@@ -585,18 +585,35 @@ export function updateAttendanceStatus(params: {
 /**
  * Danh sách yêu cầu cần duyệt phép đi trễ
  */
-export function getLeaveRequests() {
+export function getLeaveRequests(filter?: { month?: string; employee_code?: string; status?: string }) {
   const db = getDb();
-  return db
-    .prepare(`
-      SELECT a.*, e.name as employee_name, e.employee_type
-      FROM attendances a
-      LEFT JOIN employees e ON a.employee_code = e.code
-      WHERE a.is_late = 1
-      ORDER BY a.attendance_date DESC, CAST(a.employee_code AS INTEGER) ASC
-    `)
-    .all();
+  let sql = `
+    SELECT a.*, e.name as employee_name, e.employee_type
+    FROM attendances a
+    LEFT JOIN employees e ON a.employee_code = e.code
+    WHERE a.is_late = 1
+  `;
+  const params: any[] = [];
+
+  if (filter?.month && filter.month !== 'all') {
+    sql += ` AND strftime('%Y-%m', a.attendance_date) = ?`;
+    params.push(filter.month);
+  }
+  if (filter?.employee_code && filter.employee_code !== 'all') {
+    sql += ` AND a.employee_code = ?`;
+    params.push(filter.employee_code);
+  }
+  if (filter?.status === 'permitted') {
+    sql += ` AND a.late_permitted = 1`;
+  } else if (filter?.status === 'unpermitted') {
+    sql += ` AND (a.late_permitted = 0 OR a.late_permitted IS NULL)`;
+  }
+
+  sql += ` ORDER BY a.attendance_date DESC, CAST(a.employee_code AS INTEGER) ASC`;
+  return db.prepare(sql).all(...params);
 }
+
+
 
 /**
  * Tính thưởng chuyên cần theo tháng (YYYY-MM)

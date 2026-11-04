@@ -210,9 +210,9 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('attendance:getLeaveRequests', async () => {
+  ipcMain.handle('attendance:getLeaveRequests', async (_event, filter) => {
     try {
-      return getLeaveRequests();
+      return getLeaveRequests(filter);
     } catch (err: any) {
       console.error('Lỗi lấy danh sách duyệt:', err);
       return [];

@@ -149,7 +149,11 @@ export interface ElectronAPI {
     late_permitted?: number;
     note?: string;
   }) => Promise<{ success: boolean; message?: string }>;
-  getLeaveRequests: () => Promise<AttendanceRecord[]>;
+  getLeaveRequests: (filter?: {
+    month?: string;
+    employee_code?: string;
+    status?: string;
+  }) => Promise<AttendanceRecord[]>;
 
   getAttendanceBonuses: (month: string) => Promise<AttendanceBonusRow[]>;
   getMonthlySalaries: (month: string) => Promise<MonthlySalary[]>;

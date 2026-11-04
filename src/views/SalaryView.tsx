@@ -128,9 +128,9 @@ export const SalaryView: React.FC = () => {
   }, [selectedMonth]);
 
   // In bảng lương
-  const handlePrint = () => {
-    window.print();
-  };
+  // const handlePrint = () => {
+  //   window.print();
+  // };
 
   return (
     <div>
@@ -343,7 +343,7 @@ export const SalaryView: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredSalaries.map((s, index) => {
+                filteredSalaries.map((s) => {
                   const isProbation = s.employee_type === 'probation';
                   const hasBonus = (s.attendance_bonus || 0) > 0;
                   const hasPenalty = (s.late_penalty || 0) > 0;
