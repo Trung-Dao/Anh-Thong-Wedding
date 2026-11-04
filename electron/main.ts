@@ -25,6 +25,9 @@ import {
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Thiết lập ngôn ngữ tiếng Việt cho Electron và Chromium
+app.commandLine.appendSwitch('lang', 'vi');
+
 let win: BrowserWindow | null = null;
 
 function createWindow() {
