@@ -138,7 +138,7 @@ export const SalaryView: React.FC = () => {
       <div className="print-only" style={{ marginBottom: '20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           <h2 style={{ margin: '0 0 4px 0', fontSize: '18pt', fontWeight: 'bold' }}>
-            Á THÔNG WEDDING
+            Wedding
           </h2>
           <h3 style={{ margin: '0 0 6px 0', fontSize: '15pt', textTransform: 'uppercase' }}>
             BẢNG TỔNG HỢP THANH TOÁN TIỀN LƯƠNG NHÂN VIÊN
@@ -544,7 +544,7 @@ export const SalaryView: React.FC = () => {
           }}
         >
           <div style={{ fontWeight: '700', color: '#1e293b', marginBottom: '8px' }}>
-            📌 Quy định tính lương & chấm công (Á Thông Wedding):
+            📌 Quy định tính lương & chấm công:
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', lineHeight: '1.6' }}>
             <div>
