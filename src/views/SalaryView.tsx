@@ -290,14 +290,14 @@ export const SalaryView: React.FC = () => {
             </button>
 
             {/* Nút In bảng lương */}
-            <button
+            {/* <button
               className="btn btn-primary btn-sm"
               onClick={handlePrint}
               style={{ backgroundColor: '#0f766e', borderColor: '#0f766e' }}
               title="In bảng lương ra máy in hoặc lưu PDF"
             >
               🖨️ In Bảng Lương
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -479,7 +479,7 @@ export const SalaryView: React.FC = () => {
                     fontWeight: 'bold',
                   }}
                 >
-                  <td colSpan={4} style={{ textAlign: 'right', padding: '12px 14px', fontSize: '13px' }}>
+                  <td colSpan={2} style={{ textAlign: 'right', padding: '12px 14px', fontSize: '13px' }}>
                     <strong>TỔNG CỘNG ({filteredSalaries.length} NV):</strong>
                   </td>
                   <td style={{ textAlign: 'center', fontSize: '13px' }}>
@@ -850,14 +850,14 @@ export const SalaryView: React.FC = () => {
                 alignItems: 'center',
               }}
             >
-              <button
+              {/* <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={handlePrint}
                 style={{ fontSize: '12px' }}
               >
                 🖨️ In Phiếu Lương Này
-              </button>
+              </button> */}
 
               <button
                 type="button"
