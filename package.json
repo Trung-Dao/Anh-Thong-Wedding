@@ -1,7 +1,9 @@
 {
   "name": "athong_wedding",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Phần mềm quản lý chấm công & tính lương",
+  "author": "Anh Thông Wedding",
   "main": "dist-electron/main.js",
   "type": "module",
   "scripts": {
@@ -9,7 +11,8 @@
     "init-db": "node scripts/init-db.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dist": "npm run build && electron-builder --win"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -36,5 +39,45 @@
     "vite": "^7.3.1",
     "vite-plugin-electron": "^1.2.0",
     "vite-plugin-electron-renderer": "^1.0.0"
+  },
+  "build": {
+    "appId": "com.athongwedding.app",
+    "productName": "Anh Thông Wedding",
+    "npmRebuild": false,
+    "asar": true,
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/database/schema.sql",
+        "to": "schema.sql"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Phần mềm quản lý chấm công & tính lương"
+    }
   }
 }
