@@ -120,7 +120,13 @@ export const LeaveApprovalView: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  Đang tải danh sách đi trễ...
+                </td>
+              </tr>
+            ) : items.length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
                   Hiện tại không có trường hợp đi trễ nào phù hợp với bộ lọc.

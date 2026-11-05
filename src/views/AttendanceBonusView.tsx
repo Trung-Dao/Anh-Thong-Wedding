@@ -64,7 +64,13 @@ export const AttendanceBonusView: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {data.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  Đang tính toán dữ liệu chuyên cần...
+                </td>
+              </tr>
+            ) : data.length === 0 ? (
               <tr>
                 <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
                   Chưa có nhân viên hoặc dữ liệu chấm công cho tháng <strong>{selectedMonth}</strong>.

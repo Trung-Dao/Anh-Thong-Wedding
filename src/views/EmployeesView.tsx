@@ -139,7 +139,13 @@ export const EmployeesView: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+                  Đang tải danh sách nhân viên...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
                   {employees.length === 0

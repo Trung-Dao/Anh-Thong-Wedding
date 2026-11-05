@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { TabId } from '../components/Sidebar';
-import type { DashboardStats } from '../types';
+// import type { DashboardStats } from '../types';
 
 interface DashboardViewProps {
   onNavigate: (tab: TabId) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
+  /*
   const [stats, setStats] = useState<DashboardStats>({
     totalEmployees: 0,
     activeEmployees: 0,
@@ -29,6 +30,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   useEffect(() => {
     loadStats();
   }, []);
+  */
 
   return (
     <div>

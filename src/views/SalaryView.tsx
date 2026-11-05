@@ -6,7 +6,7 @@ export const SalaryView: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState(() => {
     return new Date().toISOString().slice(0, 7);
   });
-  const [availableMonths, setAvailableMonths] = useState<string[]>([]);
+  // const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [salaries, setSalaries] = useState<MonthlySalary[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +25,7 @@ export const SalaryView: React.FC = () => {
       if (window.electronAPI?.getSalaryMonths) {
         try {
           const months = await window.electronAPI.getSalaryMonths();
-          setAvailableMonths(months || []);
+          // setAvailableMonths(months || []);
           // Nếu tháng hiện tại không có dữ liệu mà có tháng trước đó thì ưu tiên tháng mới nhất
           if (months && months.length > 0 && !months.includes(selectedMonth)) {
             setSelectedMonth(months[0]);

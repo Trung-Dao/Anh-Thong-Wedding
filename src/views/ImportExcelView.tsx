@@ -262,7 +262,13 @@ export const ImportExcelView: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {history.length === 0 ? (
+              {loadingHistory ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
+                    Đang tải lịch sử nhập file...
+                  </td>
+                </tr>
+              ) : history.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
                     Chưa có file nào được nhập vào hệ thống. Hãy chọn file Excel ở trên để bắt đầu!
