@@ -60,6 +60,10 @@
       {
         "from": "electron/database/schema.sql",
         "to": "schema.sql"
+      },
+      {
+        "from": "public/Template.xlsx",
+        "to": "Template.xlsx"
       }
     ],
     "win": {

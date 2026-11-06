@@ -49,6 +49,8 @@ export function initDatabase(): Database.Database {
 
   // Đọc và chạy file schema.sql để tạo các bảng
   const possibleSchemaPaths = [
+    path.join(process.resourcesPath || '', 'schema.sql'),
+    path.join(app ? app.getAppPath() : '', 'schema.sql'),
     path.join(process.cwd(), 'electron', 'database', 'schema.sql'),
     path.join(__dirname, 'schema.sql'),
     path.join(__dirname, 'database', 'schema.sql'),

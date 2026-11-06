@@ -102,11 +102,15 @@ app.whenReady().then(() => {
   ipcMain.handle('template:download', async () => {
     try {
       const possibleSrcPaths = [
+        path.join(process.resourcesPath || '', 'Template.xlsx'),
+        path.join(process.resourcesPath || '', 'Template.xls'),
+        path.join(app.getAppPath(), 'dist', 'Template.xlsx'),
+        path.join(__dirname, '../dist/Template.xlsx'),
         path.join(process.cwd(), 'public', 'Template.xlsx'),
-        path.join(__dirname, '../public/Template.xlsx'),
-        path.join(__dirname, 'Template.xlsx'),
         path.join(process.cwd(), 'dist', 'Template.xlsx'),
         path.join(app.getAppPath(), 'public', 'Template.xlsx'),
+        path.join(__dirname, '../public/Template.xlsx'),
+        path.join(__dirname, 'Template.xlsx'),
       ];
 
       let foundSrc = '';
