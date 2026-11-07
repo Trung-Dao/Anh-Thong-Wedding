@@ -76,8 +76,8 @@ CREATE TABLE IF NOT EXISTS attendances (
     check_in TEXT,                              -- Giờ vào sớm nhất (HH:mm:ss)
     check_out TEXT,                             -- Giờ ra muộn nhất (HH:mm:ss)
     
-    regular_hours INTEGER DEFAULT 0,            -- Giờ làm chính (chuẩn 7:00 - 17:00)
-    ot_hours INTEGER DEFAULT 0,                 -- Giờ làm ngoài giờ (trước 7:00 hoặc sau 17:00)
+    regular_hours REAL DEFAULT 0,               -- Giờ làm chính (số thập phân, ví dụ 7.5, 9.75)
+    ot_hours REAL DEFAULT 0,                    -- Giờ làm ngoài giờ (số thập phân, ví dụ 1.5)
     
     is_late INTEGER DEFAULT 0,                  -- Đi trễ (vào sau 7:15)
     late_permitted INTEGER DEFAULT 0,           -- Trễ có phép (1: có phép, 0: không phép)
@@ -110,8 +110,8 @@ CREATE TABLE IF NOT EXISTS monthly_salaries (
     employee_code TEXT NOT NULL,
     month_year TEXT NOT NULL,                   -- Định dạng YYYY-MM
     total_work_days INTEGER DEFAULT 0,          -- Tổng số ngày đi làm
-    total_regular_hours INTEGER DEFAULT 0,      -- Tổng giờ làm chính
-    total_ot_hours INTEGER DEFAULT 0,           -- Tổng giờ tăng ca
+    total_regular_hours REAL DEFAULT 0,         -- Tổng giờ làm chính (số thập phân)
+    total_ot_hours REAL DEFAULT 0,              -- Tổng giờ tăng ca (số thập phân)
     
     regular_salary REAL DEFAULT 0,              -- Lương giờ chính
     ot_salary REAL DEFAULT 0,                   -- Lương tăng ca

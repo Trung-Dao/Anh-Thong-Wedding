@@ -108,9 +108,9 @@ export const SalaryView: React.FC = () => {
 
   // Thống kê tổng hợp
   const totalPayroll = filteredSalaries.reduce((acc, cur) => acc + (cur.net_salary || 0), 0);
-  const totalRegularHours = filteredSalaries.reduce((acc, cur) => acc + (cur.total_regular_hours || 0), 0);
+  const totalRegularHours = Math.round(filteredSalaries.reduce((acc, cur) => acc + (cur.total_regular_hours || 0), 0) * 100) / 100;
   const totalRegularSalary = filteredSalaries.reduce((acc, cur) => acc + (cur.regular_salary || 0), 0);
-  const totalOtHours = filteredSalaries.reduce((acc, cur) => acc + (cur.total_ot_hours || 0), 0);
+  const totalOtHours = Math.round(filteredSalaries.reduce((acc, cur) => acc + (cur.total_ot_hours || 0), 0) * 100) / 100;
   const totalOtSalary = filteredSalaries.reduce((acc, cur) => acc + (cur.ot_salary || 0), 0);
   const totalBonus = filteredSalaries.reduce((acc, cur) => acc + (cur.attendance_bonus || 0), 0);
   const totalLatePenalty = filteredSalaries.reduce((acc, cur) => acc + (cur.late_penalty || 0), 0);
@@ -171,7 +171,7 @@ export const SalaryView: React.FC = () => {
           <div className="stat-info">
             <h3>Tổng Giờ Làm Việc</h3>
             <div className="stat-value" style={{ fontSize: '20px' }}>
-              {totalRegularHours + totalOtHours} giờ
+              {Math.round((totalRegularHours + totalOtHours) * 100) / 100} giờ
             </div>
             <div className="stat-desc">
               Chính: <strong>{totalRegularHours}h</strong> | Tăng ca: <strong>{totalOtHours}h</strong> ({totalWorkDays} công)

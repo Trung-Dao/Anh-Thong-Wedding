@@ -33,8 +33,8 @@ Dữ liệu thời gian trong excel là số serial ngày, giờ.
   + Giờ làm chính: 7:00 đến 17:00 (Khách không trừ giờ nghỉ trưa vẫn tính giờ cho nhân viên luôn).
   + Cho phép về sớm trước 17:00, nếu quên check giờ ra thì sẽ tính giờ ra là 17:00. Nếu làm từ 7:00 đến 15:00 = 8 tiếng, không cần ghi nhận xin phép về sớm
   + Cho phép vào trễ 15 phút: 7:15 đến 17:00 không tính là đi trễ. Nếu 7:16 vào thì coi như là trường hợp đi trễ.
-  + Trong phạm vi giờ làm chính nếu đủ 9 giờ 45 phút thì làm tròn 10 giờ (chỉ làm tròn đối với trường hợp này). 
-  + Giờ tăng ca được tính ngoài giờ làm chính (7:00 đến 17:00): trước 7:00 sáng và sau 17:00 tối. Lấy giờ (bỏ phút lẻ).
+  + Quy tắc tính giờ: KHÔNG LÀM TRÒN BẤT KỲ GIỜ NÀO, LÀM BAO NHIÊU TÍNH BẤY NHIÊU. Thời gian làm việc (cả giờ làm chính và giờ tăng ca) được tính chính xác theo số phút thực tế và quy đổi sang số thập phân để nhân tiền theo giờ (Số giờ = Số phút / 60, ví dụ: 7:30 quy đổi thành 7.5 giờ; 8:15 quy đổi thành 8.25 giờ; 9:45 quy đổi thành 9.75 giờ).
+  + Giờ tăng ca được tính ngoài giờ làm chính (7:00 đến 17:00): trước 7:00 sáng và sau 17:00 tối. Cũng tính chính xác theo số phút thực tế quy đổi sang số thập phân (không bỏ phút lẻ, không làm tròn).
   -------------------
   Trường hợp đi trễ KHÔNG XIN PHÉP thì bị trừ 1/2 ngày lương, lương ngoài giờ tính riêng không gom vào.
   Có xin phép thì làm bao nhiêu giờ tính bấy nhiêu
@@ -47,13 +47,13 @@ Dữ liệu thời gian trong excel là số serial ngày, giờ.
   5. Vì đây là đặc thù nên không có ngày nghỉ chủ nhật hay lễ.
   6. Nếu nhân viên không làm đủ các ngày trong tháng thì không tính chuyên cần tháng đó kể cả nhân viên mới
   -------------------
-  Tính lương theo giờ (Không tính các phút lẻ, không làm tròn)
+  Tính lương theo giờ thực tế: Số giờ (thập phân) x Lương theo giờ
   Lương chính thức:
     20000/giờ
-    200000/ngày
+    200000/ngày (10 giờ)
   Lương học việc:
     16.666/giờ
-    166660/ngày
+    166660/ngày (10 giờ)
   Lương tăng ca: áp dụng cho chính thức và học việc là: 40000/giờ
 
 - Dữ liệu máy chấm công xuất ra định dang excel gồm dòng/cột và dữ liệu như bên dưới. Còn file dữ liệu mẫu tôi để tại ./data/Template 102026.xlsx

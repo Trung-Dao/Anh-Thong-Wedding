@@ -100,11 +100,12 @@ function parseTimeCell(val: any): string | null {
 
 function timeToMinutes(timeStr: string): number {
   const parts = timeStr.split(':').map(Number);
-  return (parts[0] || 0) * 60 + (parts[1] || 0) + (parts[2] || 0) / 60;
+  return (parts[0] || 0) * 60 + (parts[1] || 0);
 }
 
 /**
  * Tính toán giờ làm chính, tăng ca, và tình trạng đi trễ theo quy định công ty
+ * Quy tắc: Không làm tròn bất kỳ giờ nào, làm bao nhiêu tính bấy nhiêu (quy đổi sang số thập phân: phút / 60)
  */
 export function calculateAttendanceHours(times: string[]) {
   const sortedTimes = [...times].sort();
@@ -131,16 +132,11 @@ export function calculateAttendanceHours(times: string[]) {
   let regHours = 0;
   if (regEnd > regStart) {
     const regMin = regEnd - regStart;
-    // Quy định: Trong phạm vi giờ làm chính nếu đủ 9 giờ 45 phút (585 phút) thì làm tròn 10 giờ
-    if (inMin <= 7 * 60 + 15 && regMin >= 9 * 60 + 45) {
-      regHours = 10;
-    } else {
-      // Tính theo giờ, bỏ phút lẻ, không làm tròn
-      regHours = Math.floor(regMin / 60);
-    }
+    // Không làm tròn, làm bao nhiêu tính bấy nhiêu (quy đổi sang số thập phân)
+    regHours = Math.round((regMin / 60) * 100) / 100;
   }
 
-  // Giờ tăng ca (OT) ngoài khung 07:00 - 17:00 (trước 7h và sau 17h, bỏ phút lẻ)
+  // Giờ tăng ca (OT) ngoài khung 07:00 - 17:00 (trước 7h và sau 17h, tính chính xác số phút quy đổi thập phân)
   let otMorningMin = 0;
   if (inMin < 7 * 60) {
     otMorningMin = Math.max(0, Math.min(outMin, 7 * 60) - inMin);
@@ -149,7 +145,8 @@ export function calculateAttendanceHours(times: string[]) {
   if (outMin > 17 * 60) {
     otEveningMin = Math.max(0, outMin - Math.max(inMin, 17 * 60));
   }
-  const otHours = Math.floor((otMorningMin + otEveningMin) / 60);
+  const totalOtMin = otMorningMin + otEveningMin;
+  const otHours = Math.round((totalOtMin / 60) * 100) / 100;
 
   return {
     checkIn,
@@ -375,8 +372,6 @@ export async function importExcelTimesheet(
       let note = '';
       if (calc.isLate === 1) {
         note = 'Vào trễ sau 7:15';
-      } else if (calc.regHours === 10 && times[0] > '07:00:00') {
-        note = 'Vào trong 15p cho phép (làm tròn 10h)';
       }
 
       upsertAttendanceStmt.run(
@@ -793,10 +788,13 @@ export function getMonthlySalaries(month: string) {
       }
     }
 
+    totalRegularHours = Math.round(totalRegularHours * 100) / 100;
+    totalOtHours = Math.round(totalOtHours * 100) / 100;
+
     const hourlySalary = emp.hourly_salary || 0;
     const otHourlySalary = emp.ot_hourly_salary || 0;
-    const regularSalary = totalRegularHours * hourlySalary;
-    const otSalary = totalOtHours * otHourlySalary;
+    const regularSalary = Math.round(totalRegularHours * hourlySalary);
+    const otSalary = Math.round(totalOtHours * otHourlySalary);
 
     const bonusInfo = bonusMap.get(emp.code);
     const attendanceBonus = bonusInfo?.bonus_amount || 0;
@@ -884,5 +882,65 @@ export function getDashboardStats(dateStr?: string, monthStr?: string) {
     todayLate: todayStats?.late || 0,
     monthlyBonusEligible: eligibleBonuses,
   };
+}
+
+/**
+ * Tính toán lại toàn bộ dữ liệu chấm công từ bảng raw_attendances
+ * Áp dụng quy tắc tính giờ mới (làm bao nhiêu tính bấy nhiêu, không làm tròn)
+ */
+export function recalculateAllAttendancesFromRaw(): { updatedCount: number } {
+  const db = getDb();
+  const rawPunches = db
+    .prepare(
+      `SELECT employee_code, date_formatted, time_formatted
+       FROM raw_attendances
+       ORDER BY employee_code, date_formatted, time_formatted ASC`
+    )
+    .all() as { employee_code: string; date_formatted: string; time_formatted: string }[];
+
+  if (!rawPunches || rawPunches.length === 0) {
+    return { updatedCount: 0 };
+  }
+
+  const grouped = new Map<string, string[]>();
+  for (const p of rawPunches) {
+    const key = `${p.employee_code}||${p.date_formatted}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, []);
+    }
+    grouped.get(key)!.push(p.time_formatted);
+  }
+
+  const updateStmt = db.prepare(`
+    UPDATE attendances
+    SET check_in = ?, check_out = ?, regular_hours = ?, ot_hours = ?, is_late = ?, note = ?
+    WHERE employee_code = ? AND attendance_date = ?
+  `);
+
+  let count = 0;
+  const runTx = db.transaction(() => {
+    for (const [key, times] of grouped.entries()) {
+      const [empCode, attDate] = key.split('||');
+      const calc = calculateAttendanceHours(times);
+      let note = '';
+      if (calc.isLate === 1) {
+        note = 'Vào trễ sau 7:15';
+      }
+      const res = updateStmt.run(
+        calc.checkIn,
+        calc.checkOut,
+        calc.regHours,
+        calc.otHours,
+        calc.isLate,
+        note,
+        empCode,
+        attDate
+      );
+      if (res.changes > 0) count++;
+    }
+  });
+
+  runTx();
+  return { updatedCount: count };
 }
 
