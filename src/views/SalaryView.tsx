@@ -1104,11 +1104,11 @@ export const SalaryView: React.FC = () => {
                   {exportingExcel ? '⏳ Đang tạo file...' : '📊 Xuất Excel Nhật Ký Chấm Công'}
                 </button>
 
-                {exportNotice && (
+                {/* exportNotice && (
                   <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
                     {exportNotice}
                   </span>
-                )}
+                ) */}
               </div>
 
               <button
