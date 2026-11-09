@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { MonthlySalary, AttendanceRecord } from '../types';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 
 const xlsxLib: any = XLSX;
 
@@ -160,7 +160,7 @@ export const SalaryView: React.FC = () => {
 
       // 1. Tiêu đề
       // aoa.push(['ANH THÔNG WEDDING']);
-      aoa.push(['BẢNG CHẤM CÔNG']);
+      aoa.push(['BẢNG CHẤM CÔNG NHÂN VIÊN']);
       // aoa.push([`Kỳ tính lương: ${formattedMonthLabel}`, '', '', `Ngày xuất file: ${new Date().toLocaleDateString('vi-VN')}`]);
       aoa.push([]);
 
@@ -263,26 +263,87 @@ export const SalaryView: React.FC = () => {
         '',
         '',
       ]);
-      aoa.push([]);
-
-      // Chữ ký xác nhận đối chiếu
-      // aoa.push(['', 'NGƯỜI ĐỐI CHIẾU / NHÂN VIÊN', '', '', '', '', 'QUẢN LÝ / NGƯỜI DUYỆT']);
-      // aoa.push(['', '(Ký và ghi rõ họ tên)', '', '', '', '', '(Ký và ghi rõ họ tên)']);
 
       // Khởi tạo Worksheet & Workbook
       const ws = xlsxLib.utils.aoa_to_sheet(aoa);
 
+      // Định dạng ô A1: In đậm
+      if (ws['A1']) {
+        ws['A1'].s = {
+          font: { bold: true, sz: 12 },
+          alignment: { vertical: 'center' },
+        };
+      }
+
+      // Tạo Border nét mảnh cho toàn bộ bảng chấm công
+      const thinBorder = {
+        top: { style: 'thin', color: { rgb: '000000' } },
+        bottom: { style: 'thin', color: { rgb: '000000' } },
+        left: { style: 'thin', color: { rgb: '000000' } },
+        right: { style: 'thin', color: { rgb: '000000' } },
+      };
+
+      const startRowIdx = 2; // Dòng 3 (0-based) là Header
+      const endRowIdx = aoa.length - 1; // Dòng cuối cùng là TỔNG CỘNG
+      const totalCols = 9; // 9 cột từ A đến I
+
+      for (let r = startRowIdx; r <= endRowIdx; r++) {
+        for (let c = 0; c < totalCols; c++) {
+          const cellRef = xlsxLib.utils.encode_cell({ r, c });
+          if (!ws[cellRef]) {
+            ws[cellRef] = { t: 's', v: '' };
+          }
+
+          if (r === startRowIdx) {
+            // 1. Dòng tiêu đề cột (Header): In đậm, có viền
+            ws[cellRef].s = {
+              font: { bold: true },
+              border: thinBorder,
+              alignment: {
+                horizontal: c <= 4 ? 'center' : c === 5 || c === 6 ? 'right' : 'left',
+                vertical: 'center',
+              },
+            };
+          } else if (r === endRowIdx) {
+            // 2. Dòng TỔNG CỘNG: In đậm, có viền
+            ws[cellRef].s = {
+              font: { bold: true },
+              border: thinBorder,
+              alignment: {
+                horizontal: c === 1 ? 'center' : c === 5 || c === 6 ? 'right' : 'left',
+                vertical: 'center',
+              },
+            };
+          } else {
+            // 3. Dòng dữ liệu hàng ngày: Căn lề chuẩn & Kẻ viền
+            let hAlign = 'left';
+            if (c === 0) hAlign = 'right'; // Cột STT căn phải & in đậm
+            else if (c >= 1 && c <= 4) hAlign = 'center'; // Ngày, Thứ, Giờ vào, Giờ ra căn giữa
+            else if (c === 5 || c === 6) hAlign = 'right'; // Số giờ làm căn phải
+
+            ws[cellRef].s = {
+              font: { bold: c === 0 },
+              border: thinBorder,
+              alignment: {
+                horizontal: hAlign,
+                vertical: 'center',
+              },
+            };
+          }
+        }
+      }
+
       // Căn chỉnh độ rộng cột
       ws['!cols'] = [
         { wch: 6 },  // STT
-        { wch: 14 }, // Ngày
-        { wch: 12 }, // Thứ
-        { wch: 12 }, // Giờ Vào
-        { wch: 12 }, // Giờ Ra
+        { wch: 13 }, // Ngày
+        { wch: 10 }, // Thứ
+        { wch: 11 }, // Giờ Vào
+        { wch: 11 }, // Giờ Ra
         { wch: 18 }, // Giờ Làm Chính
         { wch: 16 }, // Giờ Tăng Ca
         { wch: 28 }, // Tình Trạng Đi Trễ
-        { wch: 32 }, // Ghi Chú
+        { wch: 22 }, // Ghi Chú
       ];
 
       const wb = xlsxLib.utils.book_new();
