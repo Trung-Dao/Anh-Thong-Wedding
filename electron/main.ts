@@ -142,6 +142,27 @@ app.whenReady().then(() => {
     }
   });
 
+  // 2.1 Xuất file Excel lưu ra máy tính (nhật ký chấm công, bảng đối chiếu)
+  ipcMain.handle('excel:exportFile', async (_event, { defaultFileName, base64Buffer }) => {
+    try {
+      const { canceled, filePath } = await dialog.showSaveDialog({
+        title: 'Xuất File Excel Nhật Ký Chấm Công',
+        defaultPath: defaultFileName,
+        filters: [{ name: 'Excel Files (*.xlsx)', extensions: ['xlsx'] }],
+      });
+
+      if (canceled || !filePath) {
+        return { success: false, canceled: true };
+      }
+
+      const buffer = Buffer.from(base64Buffer, 'base64');
+      fs.writeFileSync(filePath, buffer);
+      return { success: true, filePath };
+    } catch (err: any) {
+      return { success: false, message: err.message };
+    }
+  });
+
   // 3. Nhập file Excel chấm công
   ipcMain.handle('excel:import', async (_event, { fileBuffer, originalName }) => {
     try {

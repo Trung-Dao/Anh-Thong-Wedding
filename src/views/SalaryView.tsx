@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { MonthlySalary, AttendanceRecord } from '../types';
+import * as XLSX from 'xlsx';
+
+const xlsxLib: any = XLSX;
 
 export const SalaryView: React.FC = () => {
   // Mặc định tháng hiện tại
@@ -18,6 +21,8 @@ export const SalaryView: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<MonthlySalary | null>(null);
   const [empAttendances, setEmpAttendances] = useState<AttendanceRecord[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [exportingExcel, setExportingExcel] = useState(false);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
 
   // Tải danh sách các tháng có dữ liệu
   useEffect(() => {
@@ -126,6 +131,205 @@ export const SalaryView: React.FC = () => {
     }
     return selectedMonth;
   }, [selectedMonth]);
+
+  // Lấy thứ trong tuần (Thứ 2, Thứ 3, ..., Chủ nhật)
+  const getDayOfWeekVN = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    return days[d.getDay()] || '';
+  };
+
+  // Xuất file Excel Nhật Ký Chấm Công Hàng Ngày Trong Tháng để nhân viên đối chiếu
+  const handleExportEmployeeExcel = async () => {
+    if (!selectedEmployee) return;
+    setExportingExcel(true);
+    setExportNotice(null);
+
+    try {
+      const isProbation = selectedEmployee.employee_type === 'probation';
+      const typeLabel = isProbation ? 'Học việc' : 'Chính thức';
+      const cleanName = (selectedEmployee.employee_name || `NV_${selectedEmployee.employee_code}`)
+        .trim()
+        .replace(/\s+/g, '_');
+      const defaultFileName = `Nhat_Ky_Cham_Cong_${cleanName}_${selectedEmployee.month_year}.xlsx`;
+
+      // Tạo cấu trúc dữ liệu AOA (Array of Arrays) cho sheet Excel
+      const aoa: any[][] = [];
+
+      // 1. Tiêu đề
+      aoa.push(['ANH THÔNG WEDDING']);
+      aoa.push(['BẢNG ĐỐI CHIẾU NHẬT KÝ CHẤM CÔNG CHI TIẾT']);
+      aoa.push([`Kỳ tính lương: ${formattedMonthLabel}`, '', '', `Ngày xuất file: ${new Date().toLocaleDateString('vi-VN')}`]);
+      aoa.push([]);
+
+      // 2. Thông tin nhân viên
+      aoa.push(['I. THÔNG TIN NHÂN VIÊN']);
+      aoa.push(['Mã nhân viên:', selectedEmployee.employee_code, '', 'Họ và tên:', selectedEmployee.employee_name || '']);
+      aoa.push(['Loại nhân viên:', typeLabel, '', 'Ngày vào làm:', formatDateVN(selectedEmployee.start_date)]);
+      aoa.push([
+        'Đơn giá giờ chính:',
+        `${(selectedEmployee.hourly_salary || (isProbation ? 16666 : 20000)).toLocaleString('vi-VN')} đ/h`,
+        '',
+        'Đơn giá tăng ca (OT):',
+        `${(selectedEmployee.ot_hourly_salary || 40000).toLocaleString('vi-VN')} đ/h`,
+      ]);
+      aoa.push([]);
+
+      // 3. Tóm tắt công & lương tháng
+      aoa.push(['II. TỔNG HỢP CÔNG & LƯƠNG TRONG THÁNG']);
+      aoa.push([
+        'Số ngày đi làm:',
+        `${selectedEmployee.total_work_days}/${selectedEmployee.total_month_days || 31} ngày`,
+        '',
+        'Tổng giờ làm chính:',
+        `${selectedEmployee.total_regular_hours} giờ`,
+      ]);
+      aoa.push([
+        'Số ngày nghỉ:',
+        `${selectedEmployee.leave_days || 0} ngày`,
+        '',
+        'Tổng giờ tăng ca:',
+        `${selectedEmployee.total_ot_hours} giờ`,
+      ]);
+      aoa.push([
+        'Lương giờ chính:',
+        `${selectedEmployee.regular_salary.toLocaleString('vi-VN')} đ`,
+        '',
+        'Lương tăng ca:',
+        `${selectedEmployee.ot_salary.toLocaleString('vi-VN')} đ`,
+      ]);
+      aoa.push([
+        'Thưởng chuyên cần:',
+        `${selectedEmployee.attendance_bonus.toLocaleString('vi-VN')} đ`,
+        '',
+        'Khấu trừ phạt trễ:',
+        `-${selectedEmployee.late_penalty.toLocaleString('vi-VN')} đ (${selectedEmployee.unexcused_late_count || 0} lần K.phép)`,
+      ]);
+      aoa.push([
+        'TỔNG THỰC LĨNH:',
+        `${selectedEmployee.net_salary.toLocaleString('vi-VN')} đ`,
+        '',
+        'Trễ có phép:',
+        `${selectedEmployee.excused_late_count || 0} lần (không trừ tiền)`,
+      ]);
+      aoa.push([]);
+
+      // 4. Bảng nhật ký chấm công hàng ngày
+      aoa.push(['III. NHẬT KÝ CHẤM CÔNG HÀNG NGÀY']);
+      aoa.push([
+        'STT',
+        'Ngày',
+        'Thứ',
+        'Giờ Vào',
+        'Giờ Ra',
+        'Giờ Làm Chính (h)',
+        'Giờ Tăng Ca (h)',
+        'Tình Trạng Đi Trễ',
+        'Ghi Chú',
+      ]);
+
+      empAttendances.forEach((att, idx) => {
+        const isLate = att.is_late === 1;
+        const isPermitted = att.late_permitted === 1;
+        let lateStatusText = 'Đúng giờ';
+        if (isLate) {
+          lateStatusText = isPermitted ? 'Trễ có phép' : 'Trễ không phép (-1/2 ngày)';
+        }
+
+        aoa.push([
+          idx + 1,
+          formatDateVN(att.attendance_date),
+          getDayOfWeekVN(att.attendance_date),
+          att.check_in || '--:--',
+          att.check_out || '--:--',
+          att.regular_hours || 0,
+          att.ot_hours || 0,
+          lateStatusText,
+          att.note || '',
+        ]);
+      });
+
+      // Dòng tổng cộng
+      aoa.push([
+        '',
+        'TỔNG CỘNG',
+        '',
+        '',
+        '',
+        selectedEmployee.total_regular_hours,
+        selectedEmployee.total_ot_hours,
+        '',
+        '',
+      ]);
+      aoa.push([]);
+
+      // Chữ ký xác nhận đối chiếu
+      aoa.push(['', 'NGƯỜI ĐỐI CHIẾU / NHÂN VIÊN', '', '', '', '', 'QUẢN LÝ / NGƯỜI DUYỆT']);
+      aoa.push(['', '(Ký và ghi rõ họ tên)', '', '', '', '', '(Ký và ghi rõ họ tên)']);
+
+      // Khởi tạo Worksheet & Workbook
+      const ws = xlsxLib.utils.aoa_to_sheet(aoa);
+
+      // Căn chỉnh độ rộng cột
+      ws['!cols'] = [
+        { wch: 6 },  // STT
+        { wch: 14 }, // Ngày
+        { wch: 12 }, // Thứ
+        { wch: 12 }, // Giờ Vào
+        { wch: 12 }, // Giờ Ra
+        { wch: 18 }, // Giờ Làm Chính
+        { wch: 16 }, // Giờ Tăng Ca
+        { wch: 28 }, // Tình Trạng Đi Trễ
+        { wch: 32 }, // Ghi Chú
+      ];
+
+      const wb = xlsxLib.utils.book_new();
+      xlsxLib.utils.book_append_sheet(wb, ws, 'Nhat_Ky_Cham_Cong');
+
+      // Xuất file qua Electron API hoặc Fallback Browser
+      if (window.electronAPI?.exportExcelFile) {
+        const base64Buffer = xlsxLib.write(wb, { bookType: 'xlsx', type: 'base64' });
+        const res = await window.electronAPI.exportExcelFile({
+          defaultFileName,
+          base64Buffer,
+        });
+
+        if (res.canceled) {
+          return;
+        }
+
+        if (res.success) {
+          setExportNotice(`✅ Đã xuất file thành công tại:\n${res.filePath}`);
+          setTimeout(() => setExportNotice(null), 6000);
+        } else {
+          alert(`Lỗi khi xuất file: ${res.message || 'Không xác định'}`);
+        }
+      } else {
+        // Fallback Web: Tải trực tiếp qua Blob
+        const wbBuffer = xlsxLib.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbBuffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = defaultFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setExportNotice(`✅ Đã tải file ${defaultFileName} về máy!`);
+        setTimeout(() => setExportNotice(null), 6000);
+      }
+    } catch (err: any) {
+      console.error('Lỗi khi xuất file Excel:', err);
+      alert(`Đã xảy ra lỗi khi tạo file Excel: ${err.message}`);
+    } finally {
+      setExportingExcel(false);
+    }
+  };
 
   // In bảng lương
   // const handlePrint = () => {
@@ -756,13 +960,37 @@ export const SalaryView: React.FC = () => {
 
               {/* Bảng nhật ký chấm công hàng ngày */}
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
                   <h4 style={{ margin: 0, fontSize: '14px', color: '#1e293b' }}>
                     📅 Nhật Ký Chấm Công Hàng Ngày Trong Tháng ({empAttendances.length} ngày có mặt):
                   </h4>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
-                    {selectedEmployee.total_work_days}/{selectedEmployee.total_month_days || 31} ngày đi làm
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>
+                      {selectedEmployee.total_work_days}/{selectedEmployee.total_month_days || 31} ngày đi làm
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-sm"
+                      onClick={handleExportEmployeeExcel}
+                      disabled={exportingExcel || loadingDetails}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backgroundColor: '#107c41',
+                        color: '#ffffff',
+                        borderColor: '#107c41',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        cursor: exportingExcel || loadingDetails ? 'not-allowed' : 'pointer',
+                      }}
+                      title="Xuất bảng đối chiếu nhật ký chấm công ra file Excel"
+                    >
+                      📊 Xuất Excel
+                    </button>
+                  </div>
                 </div>
 
                 <div className="table-responsive" style={{ maxHeight: '280px', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
@@ -848,21 +1076,48 @@ export const SalaryView: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
               }}
             >
-              {/* <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handlePrint}
-                style={{ fontSize: '12px' }}
-              >
-                🖨️ In Phiếu Lương Này
-              </button> */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={handleExportEmployeeExcel}
+                  disabled={exportingExcel || loadingDetails}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    backgroundColor: '#107c41',
+                    color: '#ffffff',
+                    borderColor: '#107c41',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    padding: '8px 18px',
+                    borderRadius: '6px',
+                    cursor: exportingExcel || loadingDetails ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  {exportingExcel ? '⏳ Đang tạo file...' : '📊 Xuất Excel Nhật Ký Chấm Công'}
+                </button>
+
+                {exportNotice && (
+                  <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
+                    {exportNotice}
+                  </span>
+                )}
+              </div>
 
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => setSelectedEmployee(null)}
+                onClick={() => {
+                  setSelectedEmployee(null);
+                  setExportNotice(null);
+                }}
               >
                 Đóng
               </button>

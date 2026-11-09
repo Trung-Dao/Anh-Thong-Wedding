@@ -14,6 +14,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // 1. Tải file mẫu Template.xlsx
   downloadTemplate: () => ipcRenderer.invoke('template:download'),
+  exportExcelFile: (data: { defaultFileName: string; base64Buffer: string }) =>
+    ipcRenderer.invoke('excel:exportFile', data),
 
   // 2. Nhập file Excel & lấy lịch sử file
   importExcel: (data: { fileBuffer: Uint8Array; originalName: string }) =>

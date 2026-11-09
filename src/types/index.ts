@@ -131,6 +131,12 @@ export interface ElectronAPI {
   onMenuNavigate?: (callback: (tab: string) => void) => () => void;
 
   downloadTemplate: () => Promise<{ success: boolean; filePath?: string; canceled?: boolean; message?: string }>;
+  exportExcelFile?: (data: { defaultFileName: string; base64Buffer: string }) => Promise<{
+    success: boolean;
+    filePath?: string;
+    canceled?: boolean;
+    message?: string;
+  }>;
   importExcel: (data: { fileBuffer: Uint8Array; originalName: string }) => Promise<ImportResult>;
   getImportHistory: () => Promise<ImportFileRecord[]>;
 
