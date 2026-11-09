@@ -148,76 +148,76 @@ export const SalaryView: React.FC = () => {
     setExportNotice(null);
 
     try {
-      const isProbation = selectedEmployee.employee_type === 'probation';
-      const typeLabel = isProbation ? 'Học việc' : 'Chính thức';
+      // const isProbation = selectedEmployee.employee_type === 'probation';
+      // const typeLabel = isProbation ? 'Học việc' : 'Chính thức';
       const cleanName = (selectedEmployee.employee_name || `NV_${selectedEmployee.employee_code}`)
         .trim()
         .replace(/\s+/g, '_');
-      const defaultFileName = `Nhat_Ky_Cham_Cong_${cleanName}_${selectedEmployee.month_year}.xlsx`;
+      const defaultFileName = `Bang_Cham_Cong_${cleanName}_${selectedEmployee.month_year}.xlsx`;
 
       // Tạo cấu trúc dữ liệu AOA (Array of Arrays) cho sheet Excel
       const aoa: any[][] = [];
 
       // 1. Tiêu đề
-      aoa.push(['ANH THÔNG WEDDING']);
-      aoa.push(['BẢNG ĐỐI CHIẾU NHẬT KÝ CHẤM CÔNG CHI TIẾT']);
-      aoa.push([`Kỳ tính lương: ${formattedMonthLabel}`, '', '', `Ngày xuất file: ${new Date().toLocaleDateString('vi-VN')}`]);
+      // aoa.push(['ANH THÔNG WEDDING']);
+      aoa.push(['BẢNG CHẤM CÔNG']);
+      // aoa.push([`Kỳ tính lương: ${formattedMonthLabel}`, '', '', `Ngày xuất file: ${new Date().toLocaleDateString('vi-VN')}`]);
       aoa.push([]);
 
       // 2. Thông tin nhân viên
-      aoa.push(['I. THÔNG TIN NHÂN VIÊN']);
-      aoa.push(['Mã nhân viên:', selectedEmployee.employee_code, '', 'Họ và tên:', selectedEmployee.employee_name || '']);
-      aoa.push(['Loại nhân viên:', typeLabel, '', 'Ngày vào làm:', formatDateVN(selectedEmployee.start_date)]);
-      aoa.push([
-        'Đơn giá giờ chính:',
-        `${(selectedEmployee.hourly_salary || (isProbation ? 16666 : 20000)).toLocaleString('vi-VN')} đ/h`,
-        '',
-        'Đơn giá tăng ca (OT):',
-        `${(selectedEmployee.ot_hourly_salary || 40000).toLocaleString('vi-VN')} đ/h`,
-      ]);
-      aoa.push([]);
+      // aoa.push(['I. THÔNG TIN NHÂN VIÊN']);
+      // aoa.push(['Mã nhân viên:', selectedEmployee.employee_code, '', 'Họ và tên:', selectedEmployee.employee_name || '']);
+      // aoa.push(['Loại nhân viên:', typeLabel, '', 'Ngày vào làm:', formatDateVN(selectedEmployee.start_date)]);
+      // aoa.push([
+      //   'Đơn giá giờ chính:',
+      //   `${(selectedEmployee.hourly_salary || (isProbation ? 16666 : 20000)).toLocaleString('vi-VN')} đ/h`,
+      //   '',
+      //   'Đơn giá tăng ca (OT):',
+      //   `${(selectedEmployee.ot_hourly_salary || 40000).toLocaleString('vi-VN')} đ/h`,
+      // ]);
+      // aoa.push([]);
 
       // 3. Tóm tắt công & lương tháng
-      aoa.push(['II. TỔNG HỢP CÔNG & LƯƠNG TRONG THÁNG']);
-      aoa.push([
-        'Số ngày đi làm:',
-        `${selectedEmployee.total_work_days}/${selectedEmployee.total_month_days || 31} ngày`,
-        '',
-        'Tổng giờ làm chính:',
-        `${selectedEmployee.total_regular_hours} giờ`,
-      ]);
-      aoa.push([
-        'Số ngày nghỉ:',
-        `${selectedEmployee.leave_days || 0} ngày`,
-        '',
-        'Tổng giờ tăng ca:',
-        `${selectedEmployee.total_ot_hours} giờ`,
-      ]);
-      aoa.push([
-        'Lương giờ chính:',
-        `${selectedEmployee.regular_salary.toLocaleString('vi-VN')} đ`,
-        '',
-        'Lương tăng ca:',
-        `${selectedEmployee.ot_salary.toLocaleString('vi-VN')} đ`,
-      ]);
-      aoa.push([
-        'Thưởng chuyên cần:',
-        `${selectedEmployee.attendance_bonus.toLocaleString('vi-VN')} đ`,
-        '',
-        'Khấu trừ phạt trễ:',
-        `-${selectedEmployee.late_penalty.toLocaleString('vi-VN')} đ (${selectedEmployee.unexcused_late_count || 0} lần K.phép)`,
-      ]);
-      aoa.push([
-        'TỔNG THỰC LĨNH:',
-        `${selectedEmployee.net_salary.toLocaleString('vi-VN')} đ`,
-        '',
-        'Trễ có phép:',
-        `${selectedEmployee.excused_late_count || 0} lần (không trừ tiền)`,
-      ]);
-      aoa.push([]);
+      // aoa.push(['II. TỔNG HỢP CÔNG & LƯƠNG TRONG THÁNG']);
+      // aoa.push([
+      //   'Số ngày đi làm:',
+      //   `${selectedEmployee.total_work_days}/${selectedEmployee.total_month_days || 31} ngày`,
+      //   '',
+      //   'Tổng giờ làm chính:',
+      //   `${selectedEmployee.total_regular_hours} giờ`,
+      // ]);
+      // aoa.push([
+      //   'Số ngày nghỉ:',
+      //   `${selectedEmployee.leave_days || 0} ngày`,
+      //   '',
+      //   'Tổng giờ tăng ca:',
+      //   `${selectedEmployee.total_ot_hours} giờ`,
+      // ]);
+      // aoa.push([
+      //   'Lương giờ chính:',
+      //   `${selectedEmployee.regular_salary.toLocaleString('vi-VN')} đ`,
+      //   '',
+      //   'Lương tăng ca:',
+      //   `${selectedEmployee.ot_salary.toLocaleString('vi-VN')} đ`,
+      // ]);
+      // aoa.push([
+      //   'Thưởng chuyên cần:',
+      //   `${selectedEmployee.attendance_bonus.toLocaleString('vi-VN')} đ`,
+      //   '',
+      //   'Khấu trừ phạt trễ:',
+      //   `-${selectedEmployee.late_penalty.toLocaleString('vi-VN')} đ (${selectedEmployee.unexcused_late_count || 0} lần K.phép)`,
+      // ]);
+      // aoa.push([
+      //   'TỔNG THỰC LĨNH:',
+      //   `${selectedEmployee.net_salary.toLocaleString('vi-VN')} đ`,
+      //   '',
+      //   'Trễ có phép:',
+      //   `${selectedEmployee.excused_late_count || 0} lần (không trừ tiền)`,
+      // ]);
+      // aoa.push([]);
 
       // 4. Bảng nhật ký chấm công hàng ngày
-      aoa.push(['III. NHẬT KÝ CHẤM CÔNG HÀNG NGÀY']);
+      // aoa.push(['III. NHẬT KÝ CHẤM CÔNG HÀNG NGÀY']);
       aoa.push([
         'STT',
         'Ngày',
@@ -266,8 +266,8 @@ export const SalaryView: React.FC = () => {
       aoa.push([]);
 
       // Chữ ký xác nhận đối chiếu
-      aoa.push(['', 'NGƯỜI ĐỐI CHIẾU / NHÂN VIÊN', '', '', '', '', 'QUẢN LÝ / NGƯỜI DUYỆT']);
-      aoa.push(['', '(Ký và ghi rõ họ tên)', '', '', '', '', '(Ký và ghi rõ họ tên)']);
+      // aoa.push(['', 'NGƯỜI ĐỐI CHIẾU / NHÂN VIÊN', '', '', '', '', 'QUẢN LÝ / NGƯỜI DUYỆT']);
+      // aoa.push(['', '(Ký và ghi rõ họ tên)', '', '', '', '', '(Ký và ghi rõ họ tên)']);
 
       // Khởi tạo Worksheet & Workbook
       const ws = xlsxLib.utils.aoa_to_sheet(aoa);
@@ -301,7 +301,7 @@ export const SalaryView: React.FC = () => {
         }
 
         if (res.success) {
-          setExportNotice(`✅ Đã xuất file thành công tại:\n${res.filePath}`);
+          setExportNotice(`Đã xuất file:\n${res.filePath}`);
           setTimeout(() => setExportNotice(null), 6000);
         } else {
           alert(`Lỗi khi xuất file: ${res.message || 'Không xác định'}`);
@@ -557,7 +557,7 @@ export const SalaryView: React.FC = () => {
                       key={s.id || s.employee_code}
                       style={{ cursor: 'pointer' }}
                       onClick={() => setSelectedEmployee(s)}
-                      title="Bấm để xem chi tiết phiếu lương và nhật ký công từng ngày"
+                      title="Bấm để xem chi tiết phiếu lương và công từng ngày"
                     >
                       {/* <td style={{ textAlign: 'center', color: '#64748b' }}>{index + 1}</td> */}
                       {/* <td>
@@ -1104,11 +1104,11 @@ export const SalaryView: React.FC = () => {
                   {exportingExcel ? '⏳ Đang tạo file...' : '📊 Xuất Excel Nhật Ký Chấm Công'}
                 </button>
 
-                {/* exportNotice && (
+                {exportNotice && (
                   <span style={{ fontSize: '12px', color: '#15803d', fontWeight: '600' }}>
                     {exportNotice}
                   </span>
-                ) */}
+                )}
               </div>
 
               <button
